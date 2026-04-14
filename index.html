@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Os seus 26 da Copa</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <!-- <span class="flag">BR</span> -->
+      <div>
+        <h1>Os seus 26 da Copa</h1>
+        <div class="header-sub">Monte sua convocação da Seleção</div>
+      </div>
+    </div>
+    <div class="counter-badge" id="counterBadge">0 / 26</div>
+  </div>
+
+  <div class="main">
+
+    <!-- PAINEL ESQUERDO -->
+    <div class="left-panel">
+
+      <!-- TÉCNICO / HUMOR -->
+      <div class="card coach-card">
+        <div class="mood-label">Humor do técnico</div>
+        <div class="coach-svg-wrap" id="coachSvgWrap">
+          <img id="coachSvg" src="img/normal.jpg" width="96" height="96" alt="Técnico" style="border-radius:12px;object-fit:cover"/>
+        </div>
+        <div class="mood-bar-wrap"><div class="mood-bar" id="moodBar" style="width:50%;background:#f59e0b"></div></div>
+        <div class="mood-text" id="moodText">😐 Neutro</div>
+        <div class="score-detail" id="scoreDetail">50 / 100</div>
+      </div>
+
+      <!-- PESQUISA -->
+      <div class="card" style="padding:12px">
+        <div class="filter-label" style="margin-bottom:9px">Buscar jogador</div>
+        <div class="search-wrap">
+          <div class="search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <input class="search-input" id="searchInput" type="text" placeholder="Nome do jogador…" oninput="handleSearch(this.value)" autocomplete="off"/>
+          <button class="search-clear" id="searchClear" onclick="clearSearch()">×</button>
+        </div>
+      </div>
+
+      <!-- FILTROS DE POSIÇÃO -->
+      <div class="card" style="padding:12px">
+        <div class="filter-label">Posição</div>
+        <div class="tabs" id="tabsContainer"></div>
+      </div>
+
+      <!-- LISTA DE JOGADORES -->
+      <div class="card list-card" id="playerListWrap"></div>
+    </div>
+
+    <!-- PAINEL DIREITO -->
+    <div class="right-panel">
+      <div class="card squad-header">
+        <div class="squad-header-left">
+          <span>Sua convocação</span>
+          <p>Clique em um convocado para remover</p>
+        </div>
+      </div>
+
+      <div class="card squad-body" id="squadGroups"></div>
+
+      <div class="card share-bar">
+        <button class="share-btn" id="shareBtn" disabled onclick="handleShare()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Baixar card
+        </button>
+        <div class="result-text" id="resultText">Escolha 26 jogadores para sua convocação</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD PARA IMAGEM -->
+<div id="shareCard">
+  <div class="sc-header">
+    <div class="sc-flag">🇧🇷</div>
+    <div><div class="sc-title">Os 26 da Copa</div><div class="sc-sub">Minha convocação da Seleção Brasileira</div></div>
+    <div class="sc-mood" id="scMood"></div>
+  </div>
+  <div class="sc-groups" id="scGroups"></div>
+  <div class="sc-footer">Feito em Os 26 da Copa · Qual seria a sua?</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
