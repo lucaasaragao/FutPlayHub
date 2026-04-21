@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Escolher Jogo | Mini Games da Copa 26</title>
+  <meta name="description" content="Escolha um dos mini games da Copa 2026 para jogar."/>
+  <link rel="stylesheet" href="home.css"/>
+  <script src="theme.js"></script>
+</head>
+<body>
+
+  <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
+
+  <main class="home">
+    <section class="hero">
+      <div class="kicker">Hub de jogos</div>
+      <h1>Escolha<br>seu game</h1>
+      <p>Cada mini game é uma experiência independente. Jogue um, jogue todos.</p>
+      <div class="hero-actions">
+        <button class="btn btn-ghost" id="btnVoltar" onclick="window.location.href='index.html'">
+          ← Início
+        </button>
+      </div>
+    </section>
+
+    <section class="games">
+      <h2>Jogos disponíveis</h2>
+      <p class="games-sub">Clique em qualquer card para começar agora.</p>
+
+      <div class="game-grid">
+
+        <article class="game-card" onclick="openGame('escalacao')" tabindex="0" id="card-esc">
+          <span class="game-icon">🗒️</span>
+          <div class="game-badge">Mini game</div>
+          <h3>Escalar a Seleção</h3>
+          <p>Monte os seus 26 convocados da Copa e acompanhe o humor do técnico em tempo real.</p>
+          <button class="btn btn-primary" tabindex="-1">Jogar agora</button>
+        </article>
+
+        <article class="game-card" onclick="openGame('comparacao')" tabindex="0" id="card-cmp">
+          <span class="game-icon">⚖️</span>
+          <div class="game-badge">Mini game</div>
+          <h3>Comparar com o Técnico</h3>
+          <p>Veja quantos nomes da sua convocação coincidem com a lista oficial do técnico.</p>
+          <button class="btn btn-primary" tabindex="-1">Jogar agora</button>
+        </article>
+
+        <article class="game-card" onclick="openGame('simulador')" tabindex="0" id="card-sim">
+          <span class="game-icon">🏆</span>
+          <div class="game-badge">Mini game</div>
+          <h3>Simulador do Brasil</h3>
+          <p>Escolha vitória, empate ou derrota para cada confronto e descubra até onde o Brasil chega.</p>
+          <button class="btn btn-primary" tabindex="-1">Jogar agora</button>
+        </article>
+
+        <article class="game-card" onclick="openGame('quiz')" tabindex="0" id="card-qz">
+          <span class="game-icon">🧠</span>
+          <div class="game-badge">Mini game</div>
+          <h3>Quiz da Copa</h3>
+          <p>Responda 5 perguntas sobre futebol brasileiro e descubra qual é o seu nível.</p>
+          <button class="btn btn-primary" tabindex="-1">Jogar agora</button>
+        </article>
+
+        <article class="game-card" onclick="openGame('bolao')" tabindex="0" id="card-bl">
+          <span class="game-icon">🎯</span>
+          <div class="game-badge" style="background:var(--accent-light);color:var(--accent)">Em breve</div>
+          <h3>Bolão</h3>
+          <p>Faça seus palpites e dispute com amigos. Ranking em tempo real durante a Copa.</p>
+          <button class="btn btn-ghost" tabindex="-1">Em breve</button>
+        </article>
+
+      </div>
+    </section>
+  </main>
+
+  <script src="home.js"></script>
+  <script>
+    document.querySelectorAll('.game-card[tabindex="0"]').forEach(card => {
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+      });
+    });
+  </script>
+</body>
+</html>

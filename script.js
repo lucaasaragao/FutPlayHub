@@ -79,23 +79,83 @@ let activeFilter="ALL";
 let searchQuery="";
 let celebrationDone=false;
 
+const officialSquadIds=[1,2,3,4,5,6,7,34,59,8,10,11,41,12,13,16,45,60,19,21,18,24,27,51,52,74];
+const simMatches=[
+  {id:"arg",label:"Brasil vs Argentina"},
+  {id:"fra",label:"Brasil vs Franca"},
+  {id:"ale",label:"Brasil vs Alemanha"}
+];
+const simResults=["vitoria","empate","derrota"];
+const simLabels={vitoria:"Vitoria",empate:"Empate",derrota:"Derrota"};
+const simPoints={vitoria:3,empate:1,derrota:0};
+const quizQuestions=[
+  {q:"Qual selecao venceu a Copa de 2002?",options:["Brasil","Argentina","Alemanha"],answer:0},
+  {q:"Quem e o maior artilheiro da historia das Copas pela selecao brasileira?",options:["Ronaldo","Pele","Neymar"],answer:0},
+  {q:"Em qual ano o Brasil venceu sua primeira Copa do Mundo?",options:["1958","1962","1970"],answer:0},
+  {q:"Qual tecnico comandou o Brasil no penta de 2002?",options:["Tite","Felipao","Parreira"],answer:1},
+  {q:"Quem marcou os dois gols do Brasil na final da Copa de 2002?",options:["Rivaldo","Ronaldinho","Ronaldo"],answer:2}
+];
+
+let simChoices={arg:null,fra:null,ale:null};
+let quizState={index:0,score:0,locked:false,finished:false};
+
 function getInitials(n){return n.split(" ").map(x=>x[0]).slice(0,2).join("").toUpperCase();}
 
 function normalize(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();}
 
+function persistSquadState(){
+  const snapshot=squad.map(p=>({id:p.id,name:p.name,pos:p.pos}));
+  localStorage.setItem("squadIds",JSON.stringify(snapshot.map(p=>p.id)));
+  localStorage.setItem("squadSnapshot",JSON.stringify(snapshot));
+}
+
+function saveMiniGameState(){
+  localStorage.setItem("copa26_simChoices",JSON.stringify(simChoices));
+  localStorage.setItem("copa26_quizBest",String(getQuizBestScore()));
+}
+
+function loadMiniGameState(){
+  const savedSim=localStorage.getItem("copa26_simChoices");
+  if(savedSim){
+    try{
+      const parsed=JSON.parse(savedSim);
+      simMatches.forEach(m=>{
+        if(parsed[m.id]&&simResults.includes(parsed[m.id]))simChoices[m.id]=parsed[m.id];
+      });
+    }catch(_e){}
+  }
+}
+
+function getPlayerById(id){return players.find(p=>p.id===id);}
+
+function copyTextToClipboard(text,successMsg){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>showToast(successMsg)).catch(()=>showToast("Nao foi possivel copiar agora."));
+    return;
+  }
+  showToast("Seu navegador nao suporta copia automatica.");
+}
+
 function calcMood(){
   if(!squad.length)return 50;
-  let score=50,neverCount=0;
+  let score=35,neverCount=0;
   squad.forEach(p=>{
-    if(p.status==="recent")score+=2.5;
-    else if(p.status==="before")score+=1;
-    else{score-=3.5;neverCount++;}
-    if(p.badge==="controverso")score-=2;
+    if(p.status==="recent")score+=1.5;
+    else if(p.status==="before")score+=0.5;
+    else{score-=5;neverCount++;}
+    if(p.badge==="controverso")score-=3;
+    if(p.badge==="polêmico")score-=4;
     if(p.badge==="promessa")score+=0.5;
     if(p.badge==="artilheiro")score+=1;
+    if(p.badge==="em alta")score+=1.5;
   });
-  if(neverCount>5)score-=(neverCount-5)*3;
-  return Math.max(0,Math.min(97,score));
+  if(neverCount>3)score-=(neverCount-3)*4;
+  score=Math.max(0,Math.min(97,score));
+  // Neymar (id:18) ou Fábio (id:65) convocados → -60% de punição
+  const hasNeymar=squad.some(p=>p.id===18);
+  const hasFabio=squad.some(p=>p.id===65);
+  if(hasNeymar||hasFabio)score=Math.round(score*0.4);
+  return score;
 }
 
 function getMoodState(s){
@@ -189,12 +249,24 @@ function celebrate(){
   if(celebrationDone)return;
   celebrationDone=true;
   launchConfetti();
-  drawCoach(calcMood(),true);
+  const score=Math.round(calcMood());
+  drawCoach(score,true);
+  localStorage.setItem("mood",String(score));
   const wrap=document.getElementById("coachSvgWrap");
   wrap.style.animation="none";wrap.offsetHeight;
   wrap.style.animation="coachBounce 0.5s ease 3";
   setTimeout(()=>{drawCoach(calcMood(),false);},2000);
   showToast("Convocação completa! Baixe seu card!");
+
+  const trailActive=localStorage.getItem("trailActive")==="1";
+  if(trailActive){
+    const nextHigh=Math.random()<0.5?"simulador.html":"bolao.html";
+    const nextLow=Math.random()<0.5?"quiz.html":"desafio.html";
+    const target=score>=60?nextHigh:nextLow;
+    const label=score>=60?"simulador/bolao":"quiz/desafio";
+    showToast(`Mood ${score}! Indo para ${label}...`);
+    setTimeout(()=>{window.location.href=target;},1600);
+  }
 }
 
 function updateMood(){
@@ -324,7 +396,182 @@ function removePlayer(id){
   updateAll();
 }
 
-function updateAll(){updateMood();renderPlayerList();renderSquad();}
+function updateAll(){persistSquadState();updateMood();renderPlayerList();renderSquad();updateMiniGamesState();}
+
+function updateMiniGamesState(){
+  const compareBtn=document.getElementById("compareBtn");
+  const compareHint=document.getElementById("compareHint");
+  if(!compareBtn||!compareHint)return;
+  compareBtn.disabled=squad.length!==26;
+  compareHint.textContent=squad.length===26?"Convocacao completa. Compare agora!":"Monte os 26 para liberar a comparacao completa.";
+}
+
+function runCoachComparison(){
+  if(squad.length!==26){
+    showToast("Feche sua convocacao com 26 jogadores para comparar.");
+    return;
+  }
+  const officialSet=new Set(officialSquadIds);
+  const userSet=new Set(squad.map(p=>p.id));
+  const hits=squad.filter(p=>officialSet.has(p.id));
+  const similarity=Math.round((hits.length/26)*100);
+  const result=document.getElementById("compareResult");
+  const officialPlayers=officialSquadIds.map(id=>getPlayerById(id)).filter(Boolean);
+  const userPlayers=[...squad];
+
+  result.innerHTML=`
+    <div class="compare-score">
+      <strong>Voce acertou ${hits.length} de 26 jogadores</strong>
+      <p>Similaridade: ${similarity}%</p>
+    </div>
+    <div class="compare-lists">
+      <div class="compare-col">
+        <h4>Lista oficial</h4>
+        <div class="compare-items">
+          ${officialPlayers.map(p=>`<span class="compare-pill ${userSet.has(p.id)?"hit":"miss"}">${p.name}</span>`).join("")}
+        </div>
+      </div>
+      <div class="compare-col">
+        <h4>Sua convocacao</h4>
+        <div class="compare-items">
+          ${userPlayers.map(p=>`<span class="compare-pill ${officialSet.has(p.id)?"hit":"miss"}">${p.name}</span>`).join("")}
+        </div>
+      </div>
+    </div>
+    <button class="mini-copy" onclick="copyCoachComparison(${hits.length},${similarity})">Copiar resultado</button>
+  `;
+}
+
+function copyCoachComparison(hits,similarity){
+  const text=`Minha convocacao acertou ${hits} de 26 da lista oficial. Similaridade: ${similarity}%.`;
+  copyTextToClipboard(text,"Resultado da comparacao copiado!");
+}
+
+function renderSimulator(){
+  const wrap=document.getElementById("simList");
+  if(!wrap)return;
+  wrap.innerHTML=simMatches.map(match=>`<div class="sim-row">
+      <div class="sim-row-title">${match.label}</div>
+      <div class="sim-options">
+        ${simResults.map(result=>`<button class="sim-option ${simChoices[match.id]===result?"active":""}" onclick="setSimChoice('${match.id}','${result}')">${simLabels[result]}</button>`).join("")}
+      </div>
+    </div>`).join("");
+}
+
+function setSimChoice(matchId,result){
+  simChoices[matchId]=result;
+  saveMiniGameState();
+  renderSimulator();
+}
+
+function getTournamentStage(totalPoints){
+  if(totalPoints<=1)return {label:"Eliminado na fase de grupos",emoji:"😢"};
+  if(totalPoints<=4)return {label:"Quartas de final",emoji:"🙂"};
+  if(totalPoints<=6)return {label:"Semifinal",emoji:"🔥"};
+  if(totalPoints<=8)return {label:"Final",emoji:"🏆"};
+  return {label:"Campeao",emoji:"🇧🇷"};
+}
+
+function runTournamentSimulator(){
+  const allPicked=simMatches.every(m=>Boolean(simChoices[m.id]));
+  if(!allPicked){
+    showToast("Escolha um resultado para cada jogo.");
+    return;
+  }
+  const points=simMatches.reduce((sum,m)=>sum+simPoints[simChoices[m.id]],0);
+  const stage=getTournamentStage(points);
+  const result=document.getElementById("simResult");
+  result.innerHTML=`
+    <div class="sim-score">
+      <strong>${stage.emoji} ${stage.label}</strong>
+      <p>Pontuacao simulada: ${points} de 9</p>
+    </div>
+    <button class="mini-copy" onclick="copySimulationResult('${stage.label}',${points})">Copiar campanha</button>
+  `;
+}
+
+function copySimulationResult(stage,points){
+  const text=`No simulador da Copa eu cheguei em: ${stage}. Pontuacao: ${points}/9.`;
+  copyTextToClipboard(text,"Campanha copiada!");
+}
+
+function getQuizBestScore(){
+  const best=Number(localStorage.getItem("copa26_quizBest")||0);
+  return Number.isFinite(best)?best:0;
+}
+
+function getQuizLevel(score){
+  if(score<=2)return "Torcedor casual";
+  if(score<=4)return "Entende bem";
+  return "Especialista";
+}
+
+function renderQuiz(){
+  const wrap=document.getElementById("quizWrap");
+  if(!wrap)return;
+  if(quizState.finished){
+    const level=getQuizLevel(quizState.score);
+    const best=Math.max(getQuizBestScore(),quizState.score);
+    localStorage.setItem("copa26_quizBest",String(best));
+    wrap.innerHTML=`
+      <div class="quiz-result">
+        <strong>Voce acertou ${quizState.score} de ${quizQuestions.length}</strong>
+        <p>Nivel: ${level}</p>
+        <p>Melhor pontuacao salva: ${best}/${quizQuestions.length}</p>
+      </div>
+      <div class="quiz-actions">
+        <button class="mini-btn" onclick="restartQuiz()">Jogar de novo</button>
+        <button class="mini-copy" onclick="copyQuizResult(${quizState.score},'${level}')">Copiar resultado</button>
+      </div>
+    `;
+    saveMiniGameState();
+    return;
+  }
+  const current=quizQuestions[quizState.index];
+  wrap.innerHTML=`
+    <div class="quiz-progress">Pergunta ${quizState.index+1} de ${quizQuestions.length}</div>
+    <div class="quiz-question">${current.q}</div>
+    <div class="quiz-options">
+      ${current.options.map((opt,i)=>`<button id="quizOpt${i}" class="quiz-option" onclick="answerQuiz(${i})">${opt}</button>`).join("")}
+    </div>
+  `;
+}
+
+function answerQuiz(optionIndex){
+  if(quizState.locked||quizState.finished)return;
+  quizState.locked=true;
+  const current=quizQuestions[quizState.index];
+  const isCorrect=optionIndex===current.answer;
+  if(isCorrect)quizState.score++;
+
+  current.options.forEach((_opt,i)=>{
+    const btn=document.getElementById(`quizOpt${i}`);
+    if(!btn)return;
+    if(i===current.answer)btn.classList.add("correct");
+    else if(i===optionIndex)btn.classList.add("wrong");
+    btn.disabled=true;
+  });
+
+  setTimeout(()=>{
+    quizState.index++;
+    quizState.locked=false;
+    if(quizState.index>=quizQuestions.length){
+      quizState.finished=true;
+      showToast("Quiz finalizado!");
+    }
+    renderQuiz();
+  },700);
+}
+
+function restartQuiz(){
+  quizState={index:0,score:0,locked:false,finished:false};
+  renderQuiz();
+}
+
+function copyQuizResult(score,level){
+  const text=`No quiz rapido da Copa eu fiz ${score}/5. Nivel: ${level}.`;
+  copyTextToClipboard(text,"Resultado do quiz copiado!");
+}
 
 function buildShareCard(){
   const score=Math.round(calcMood());
@@ -369,5 +616,24 @@ function showToast(msg){
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),3000);
 }
 
+function dismissRulesModal(){
+  const overlay=document.getElementById("rulesOverlay");
+  if(!overlay)return;
+  overlay.classList.add("hidden");
+  localStorage.setItem("rulesSeen","1");
+}
+
+function initRulesModal(){
+  const overlay=document.getElementById("rulesOverlay");
+  if(!overlay)return;
+  const shouldShow=localStorage.getItem("trailActive")==="1"&&localStorage.getItem("rulesSeen")!=="1";
+  if(!shouldShow)overlay.classList.add("hidden");
+}
+
 // Inicialização
+loadMiniGameState();
+initRulesModal();
 renderTabs();renderPlayerList();renderSquad();updateMood();
+updateMiniGamesState();
+renderSimulator();
+renderQuiz();

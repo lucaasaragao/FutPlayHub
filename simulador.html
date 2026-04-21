@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simulador | Mini Games da Copa 26</title>
+  <meta name="description" content="Simule a campanha do Brasil na Copa 2026 escolhendo os resultados de cada jogo."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="home.css"/>
+  <script src="theme.js"></script>
+  <style>
+    .sim-shell { max-width: 600px; margin: 0 auto; }
+
+    .sim-game-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      box-shadow: var(--shadow-md);
+      transition: background var(--transition), border-color var(--transition);
+      animation: fadeSlideIn .4s ease .15s both;
+    }
+
+    /* ── match card ── */
+    .sim-match-row {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all var(--transition);
+    }
+    .sim-match-row:hover { border-color: var(--border-muted); }
+
+    .sim-match-meta {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .sim-round-badge {
+      font-size: 10px; font-weight: 800; letter-spacing: .06em;
+      text-transform: uppercase;
+      background: var(--primary-light); color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 20px; padding: 2px 9px;
+    }
+    .sim-match-date {
+      font-size: 11px; color: var(--text-muted); font-weight: 600;
+    }
+
+    .sim-match-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px; font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sim-flag { font-size: 22px; }
+
+    .sim-venue {
+      font-size: 11px; color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .sim-pick-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0; }
+
+    .sim-pick-btn {
+      flex: 1; min-width: 80px;
+      padding: 10px 8px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border-muted);
+      background: var(--card);
+      color: var(--text-muted);
+      font-size: 13px; font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all .18s;
+      text-align: center;
+    }
+    .sim-pick-btn:hover { transform: translateY(-2px); }
+    .sim-pick-btn.vitoria {
+      border-color: var(--primary); background: var(--primary-light); color: var(--primary);
+    }
+    .sim-pick-btn.empate {
+      border-color: var(--accent); background: var(--accent-light); color: var(--accent);
+    }
+    .sim-pick-btn.derrota {
+      border-color: var(--danger); background: var(--danger-light); color: var(--danger);
+    }
+    .sim-pick-btn.active.vitoria  { box-shadow: 0 4px 14px var(--glow-primary); }
+    .sim-pick-btn.active.empate   { box-shadow: 0 4px 14px rgba(202,138,4,.25); }
+    .sim-pick-btn.active.derrota  { box-shadow: 0 4px 14px rgba(239,68,68,.2); }
+
+    /* ── score input ── */
+    .sim-score-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 12px; flex-wrap: wrap;
+    }
+    .sim-score-label {
+      font-size: 12px; font-weight: 700; color: var(--text-muted);
+    }
+    .sim-score-inputs {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .sim-score-input {
+      width: 52px; text-align: center;
+      padding: 6px 8px; border-radius: 8px;
+      border: 1.5px solid var(--border-muted);
+      background: var(--card); color: var(--text);
+      font-size: 16px; font-weight: 800;
+      font-family: 'Syne', sans-serif;
+      transition: border-color .18s;
+      -moz-appearance: textfield;
+    }
+    .sim-score-input::-webkit-inner-spin-button,
+    .sim-score-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .sim-score-input:focus {
+      outline: none; border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--glow-primary);
+    }
+    .sim-score-sep {
+      font-size: 18px; font-weight: 800; color: var(--text-muted);
+    }
+
+    /* ── result box ── */
+    .sim-result-box {
+      margin-top: 16px; padding: 24px 20px;
+      border-radius: 14px;
+      background: var(--bg); border: 1px solid var(--border);
+      text-align: center;
+      animation: fadeSlideIn .4s ease;
+    }
+    .sim-result-emoji { font-size: 52px; display: block; margin-bottom: 10px; }
+    .sim-result-stage {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px; font-weight: 800; color: var(--text);
+      margin-bottom: 4px;
+    }
+    .sim-result-pts { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+
+    .sim-score-summary {
+      display: inline-flex; flex-direction: column; gap: 4px;
+      text-align: left; margin-bottom: 16px;
+    }
+    .res-row { font-size: 13px; color: var(--text-muted); }
+    .res-score {
+      font-weight: 800; color: var(--text);
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 6px; padding: 1px 6px; margin-left: 4px;
+    }
+
+    .sim-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
+
+  <main class="home sim-shell">
+
+    <section class="hero" style="margin-bottom:20px">
+      <div class="kicker">🏆 Mini game</div>
+      <h1>Simulador<br>do Brasil</h1>
+      <p>Escolha vitória, empate ou derrota para cada confronto e descubra onde a Seleção chega.</p>
+      <div class="hero-actions">
+        <button class="btn btn-ghost" id="btnVoltar" onclick="window.location.href='index.html'">← Voltar</button>
+      </div>
+    </section>
+
+    <div class="sim-game-card">
+      <div id="simulatorRoot"></div>
+    </div>
+
+  </main>
+
+  <script src="simulador.js"></script>
+</body>
+</html>

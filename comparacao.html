@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Comparação | Mini Games da Copa 26</title>
+  <meta name="description" content="Compare sua convocação com a lista oficial e descubra sua similaridade."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="home.css"/>
+  <script src="theme.js"></script>
+  <style>
+    .cmp-shell { max-width: 640px; margin: 0 auto; }
+    .cmp-game-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      box-shadow: var(--shadow-md);
+      transition: background var(--transition), border-color var(--transition);
+      animation: fadeSlideIn .4s ease .15s both;
+    }
+    .cmp-score-box {
+      background: var(--primary-light);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    .cmp-score-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 38px; font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .cmp-score-label {
+      font-size: 13px; color: var(--text-muted); margin-top: 4px;
+    }
+    .cmp-columns {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 540px) { .cmp-columns { grid-template-columns: 1fr; } }
+    .cmp-col {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px;
+    }
+    .cmp-col-title {
+      font-size: 10px; font-weight: 800; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px;
+    }
+    .cmp-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+    .cmp-pill {
+      border-radius: 999px; padding: 4px 10px;
+      font-size: 11px; font-weight: 600;
+      border: 1.5px solid transparent;
+      transition: transform .12s;
+    }
+    .cmp-pill:hover { transform: scale(1.05); }
+    .cmp-pill.hit {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--border);
+    }
+    .cmp-pill.miss {
+      background: var(--danger-light);
+      color: var(--danger);
+      border-color: var(--border);
+    }
+    .cmp-empty {
+      text-align: center; color: var(--text-muted);
+      font-size: 14px; padding: 12px 0;
+    }
+    .cmp-legend {
+      display: flex; gap: 14px; flex-wrap: wrap;
+      margin-bottom: 14px; font-size: 12px; color: var(--text-muted);
+      align-items: center;
+    }
+    .cmp-legend span { display: flex; align-items: center; gap: 5px; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .dot.hit  { background: var(--primary); }
+    .dot.miss { background: var(--danger); }
+  </style>
+</head>
+<body>
+  <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
+
+  <main class="home cmp-shell">
+
+    <section class="hero" style="margin-bottom:20px">
+      <div class="kicker">⚖️ Mini game</div>
+      <h1>Comparar com<br>o Técnico</h1>
+      <p>Compare sua convocação com a lista oficial e veja sua similaridade.</p>
+      <div class="hero-actions">
+        <button class="btn btn-ghost" id="btnVoltar" onclick="window.location.href='index.html'">← Voltar</button>
+        <button class="btn btn-primary" id="btnCompare" onclick="runCoachComparisonPage()">⚖️ Comparar agora</button>
+      </div>
+    </section>
+
+    <div class="cmp-game-card">
+      <div id="compareResultPage">
+        <div class="cmp-empty">
+          👆 Clique em <strong>Comparar agora</strong> para ver o resultado.<br>
+          <span style="font-size:12px;margin-top:6px;display:block">Você precisa ter montado sua convocação na página de Escalação.</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="comparacao.js"></script>
+</body>
+</html>

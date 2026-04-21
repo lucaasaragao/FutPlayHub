@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Escalação | Mini Games da Copa 2026</title>
+  <meta name="description" content="Monte sua convocação da Seleção Brasileira para a Copa 2026."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="theme.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+  <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
+
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="app">
+
+    <!-- Nav -->
+    <nav class="nav-bar">
+      <button class="nav-btn" id="btnInicio" onclick="window.location.href='index.html'">← Início</button>
+    </nav>
+
+    <!-- Rules Modal -->
+    <div class="rules-overlay" id="rulesOverlay">
+      <div class="rules-modal">
+        <div class="rules-modal-header">
+          <span class="rules-modal-icon">⚽</span>
+          <h2>Como funciona</h2>
+        </div>
+        <ul class="rules-modal-list">
+          <li>Escolha os <strong>26 jogadores</strong> que você levaria para a Copa</li>
+          <li>Cada decisão impacta o <strong>humor do técnico</strong> 😄😐😡</li>
+          <li>Mandou bem? Ele aprova. Pisou na bola? Ele não perdoa</li>
+          <li>Só estão disponíveis jogadores no <strong>radar da seleção</strong></li>
+        </ul>
+        <button class="rules-modal-btn" onclick="dismissRulesModal()">Entendi, vamos lá! 🔥</button>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <div>
+          <h1>🇧🇷 Os seus 26 da Copa</h1>
+          <div class="header-sub">Monte sua convocação da Seleção Brasileira</div>
+        </div>
+      </div>
+      <div class="counter-badge" id="counterBadge">0 / 26</div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main">
+      <!-- Left Panel -->
+      <div class="left-panel">
+
+        <!-- Coach mood card -->
+        <div class="card coach-card">
+          <div class="mood-label">Humor do técnico</div>
+          <div class="coach-svg-wrap" id="coachSvgWrap">
+            <img id="coachSvg" src="img/normal.jpg" width="96" height="96" alt="Técnico"/>
+          </div>
+          <div class="mood-bar-wrap">
+            <div class="mood-bar" id="moodBar" style="width:50%;background:#f59e0b"></div>
+          </div>
+          <div class="mood-text" id="moodText">Neutro</div>
+          <div class="score-detail" id="scoreDetail">50 / 100</div>
+        </div>
+
+        <!-- Search -->
+        <div class="card" style="padding:12px">
+          <div class="filter-label" style="margin-bottom:9px">Buscar jogador</div>
+          <div class="search-wrap">
+            <div class="search-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+            <input class="search-input" id="searchInput" type="text" placeholder="Nome do jogador..." oninput="handleSearch(this.value)" autocomplete="off"/>
+            <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+          </div>
+        </div>
+
+        <!-- Position Tabs -->
+        <div class="card" style="padding:12px">
+          <div class="filter-label">Posição</div>
+          <div class="tabs" id="tabsContainer"></div>
+        </div>
+
+        <!-- Player List -->
+        <div class="card list-card" id="playerListWrap"></div>
+
+      </div>
+
+      <!-- Right Panel -->
+      <div class="right-panel">
+
+        <div class="card squad-header">
+          <div class="squad-header-left">
+            <span>Sua convocação</span>
+            <p>Clique em um convocado para remover</p>
+          </div>
+        </div>
+
+        <div class="card squad-body" id="squadGroups"></div>
+
+        <div class="card share-bar">
+          <button class="share-btn" id="shareBtn" disabled onclick="handleShare()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+            Baixar card
+          </button>
+          <div class="result-text" id="resultText">Escolha 26 jogadores para sua convocação</div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer class="app-footer">
+      <div class="footer-content">
+        <div class="footer-copyright">© 2026 Lucas Aragão</div>
+      </div>
+    </footer>
+
+    <!-- Share Card (hidden, for image generation) -->
+    <div id="shareCard">
+      <div class="sc-header">
+        <div class="sc-flag">🇧🇷</div>
+        <div>
+          <div class="sc-title">Os 26 da Copa</div>
+          <div class="sc-sub">Minha convocação da Seleção Brasileira</div>
+        </div>
+        <div class="sc-mood" id="scMood"></div>
+      </div>
+      <div class="sc-groups" id="scGroups"></div>
+      <div class="sc-footer">Mini Games da Copa 26 · Qual seria a sua?</div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
