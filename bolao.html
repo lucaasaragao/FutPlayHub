@@ -1,23 +1,310 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bolao | Mini Games da Copa</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="home.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bolão | Mini Games da Copa 26</title>
+  <meta name="description" content="Participe do Bolão da Copa, dê seus palpites e veja seu ranking contra a galera." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="home.css" />
+  <script src="theme.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    .bolao-shell {
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    /* match card */
+    .bolao-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+
+    .bolao-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .meta-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bolao-group {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 20px;
+      padding: 2px 9px;
+    }
+
+    .bolao-date {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .status-waiting {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .status-points {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .status-zero {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+
+    .bolao-teams {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .team {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .team-flag {
+      font-size: 32px;
+    }
+
+    .team-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .score-inputs {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .score-input {
+      width: 56px;
+      height: 56px;
+      text-align: center;
+      border-radius: 12px;
+      border: 2px solid var(--border-muted);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 24px;
+      font-weight: 800;
+      font-family: 'Syne', sans-serif;
+      transition: all .2s;
+      -moz-appearance: textfield;
+    }
+
+    .score-input:disabled {
+      background: var(--border-muted);
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .score-input::-webkit-inner-spin-button,
+    .score-input::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .score-input:focus:not(:disabled) {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--glow-primary);
+    }
+
+    .score-sep {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+
+    .bolao-venue {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* Results layout */
+    .ranking-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-top: 32px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .ranking-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .ranking-list {
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .rank-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-bottom: 1px solid var(--border-muted);
+    }
+
+    .rank-row:last-child {
+      border-bottom: none;
+    }
+
+    .rank-pos {
+      font-weight: 800;
+      color: var(--text-muted);
+      width: 30px;
+    }
+
+    .rank-name {
+      font-weight: 600;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .rank-pts {
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .rank-row.is-me {
+      background: var(--primary-light);
+      border-radius: 8px;
+      border-bottom: none;
+    }
+  </style>
 </head>
+
 <body>
-  <main class="home">
-    <section class="hero">
-      <div class="kicker">Mini game</div>
-      <h1>Bolao da Copa</h1>
-      <p>Espaco para registrar palpites e ranking. Fluxo pronto para receber a logica.</p>
+  <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
+
+  <main class="home bolao-shell">
+    <section class="hero" style="margin-bottom:20px">
+      <div class="kicker">🏆 Mini game</div>
+      <h1>Bolão da Copa</h1>
+      <p>Adivinhe os placares. Pontue quando os jogos acabarem: Placar exato (5pts), Vencedor e Saldo (3pts), Vencedor
+        ou Empate (2pts).</p>
       <div class="hero-actions">
-        <button class="btn btn-primary" onclick="window.location.href='games.html'">Escolher outro jogo</button>
-        <button class="btn btn-ghost" onclick="window.location.href='index.html'">Voltar para Inicio</button>
+        <button class="btn btn-ghost" onclick="window.location.href='index.html'">← Voltar</button>
       </div>
     </section>
+
+    <!-- PALPITES E RANKING UNIFICADOS -->
+    <div id="palpitesContainer"></div>
+
+    <div class="ranking-card">
+      <div class="ranking-title">Ranking Geral</div>
+
+      <div id="historyStats"
+        style="display:flex; justify-content:center; gap:16px; margin-bottom:16px; font-size:12px; font-weight:600;">
+        <div style="background:var(--primary-light); color:var(--primary); padding:6px 12px; border-radius:8px;">Maior:
+          <span id="bestScore">0</span>
+        </div>
+        <div
+          style="background:var(--card); color:var(--text); border:1px solid var(--border); padding:6px 12px; border-radius:8px;">
+          Total Atual: <span id="currentScore">0</span></div>
+      </div>
+
+      <div class="ranking-list" id="rankingList"></div>
+      <div style="display: flex; gap: 8px; justify-content: center; flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="copyRanking()">📋 Copiar Texto</button>
+        <button class="btn btn-primary" onclick="shareImage()">📸 Compartilhar Imagem</button>
+      </div>
+    </div>
+
+    <div class="final-actions" style="margin-bottom: 40px; text-align:center;">
+      <button class="btn btn-ghost" onclick="resetBolao()">⚠️ Resetar Meus Palpites</button>
+    </div>
+
   </main>
+
+  <!-- Modal Confirm Reset -->
+  <div class="egg-overlay" id="resetModalOverlay" onclick="closeResetModal(event)">
+    <div class="egg-modal" id="resetModal">
+      <span class="egg-emoji" style="font-size:40px; display:block; margin-bottom:16px;">⚠️</span>
+      <h2 style="font-family:'Syne'; font-size:20px; margin-bottom:8px;">Atenção!</h2>
+      <p style="font-size:14px; color:var(--text-muted); margin-bottom:24px;">Tem certeza que deseja apagar todos os
+        seus palpites? Esta ação não pode ser desfeita.</p>
+      <div style="display:flex; gap:12px;">
+        <button class="btn btn-ghost" style="flex:1; justify-content:center;"
+          onclick="closeResetModal()">Cancelar</button>
+        <button class="btn btn-primary"
+          style="flex:1; justify-content:center; background:var(--danger); border-color:var(--danger);"
+          onclick="confirmResetBolao()">Sim, apagar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Card Offscreen -->
+  <div id="shareCard"
+    style="position: absolute; top: -9999px; left: 0; width: 400px; background: #052e16; color: #fff; padding: 32px; border-radius: 16px; font-family: 'Inter', sans-serif;">
+    <div
+      style="text-align:center; font-family:'Syne', sans-serif; font-size:24px; font-weight:800; margin-bottom:8px; color:#dcfce7;">
+      🏆 Bolão da Copa 26</div>
+    <div style="text-align:center; font-size:14px; color:#86efac; margin-bottom:24px;">Veja minha campanha!</div>
+
+    <div
+      style="background:rgba(255,255,255,0.1); border-radius:12px; padding:20px; text-align:center; margin-bottom:20px;">
+      <div style="font-size:14px; font-weight:600; color:#dcfce7; margin-bottom:4px;">Minha Pontuação</div>
+      <div id="shareScore" style="font-family:'Syne', sans-serif; font-size:48px; font-weight:800; color:#4ade80;">0
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.1); border-radius:12px; padding:16px;">
+      <div style="font-size:14px; font-weight:600; color:#dcfce7; margin-bottom:12px; text-align:center;">Ranking (Top
+        3)</div>
+      <div id="shareRanking" style="font-size:14px; font-weight:600;"></div>
+    </div>
+  </div>
+
+  <script src="bolao.js"></script>
 </body>
+
 </html>

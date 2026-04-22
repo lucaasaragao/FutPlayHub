@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mini Games da Copa 26</title>
-  <meta name="description" content="Monte sua convocação, faça o quiz e simule a campanha do Brasil na Copa 2026."/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Games da Copa</title>
+  <meta name="description" content="Monte sua convocação, faça o quiz e simule a campanha do Brasil na Copa 2026." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="home.css"/>
+  <link rel="stylesheet" href="home.css" />
   <script src="theme.js"></script>
 </head>
+
 <body>
 
   <!-- Theme Toggle -->
@@ -34,9 +36,10 @@
       <!-- Floating particles -->
       <div class="particles" id="particles"></div>
 
-      <div class="kicker">⚽ Copa do Mundo 2026</div>
+      <div class="kicker">⚽ Entre em clima de copa</div>
       <h1>Mini Games<br>da Copa 26</h1>
-      <p>Monte sua seleção, teste seus conhecimentos e simule a campanha do Brasil. Uma experiência leve, divertida e viciante.</p>
+      <p>Monte sua seleção, teste seus conhecimentos e simule a campanha do Brasil. Uma experiência leve, divertida e
+        viciante.</p>
 
       <div class="cartoon-row" aria-hidden="true">
         <div class="cartoon-ball" id="eggBall" title="..."></div>
@@ -45,7 +48,9 @@
 
       <div class="hero-actions">
         <button class="btn btn-primary" id="btnJogarAgora" onclick="startNow()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
           Jogar agora
         </button>
       </div>
@@ -69,32 +74,32 @@
           <span class="game-icon">🧠</span>
           <div class="game-badge">Mini game</div>
           <h3>Quiz da Copa</h3>
-          <p>Responda 5 perguntas sobre futebol brasileiro e descubra seu nível.</p>
+          <p>Responda 10 perguntas sobre Copas do Mundo e descubra seu nível.</p>
           <button class="btn btn-primary" tabindex="-1">Jogar</button>
         </article>
 
         <article class="game-card" onclick="openGame('simulador')" tabindex="0" id="card-simulador">
           <span class="game-icon">🏆</span>
           <div class="game-badge">Mini game</div>
-          <h3>Simulador do Brasil</h3>
-          <p>Escolha os resultados contra Argentina, França e Alemanha. Chegamos na final?</p>
+          <h3>Simulador do Hexa</h3>
+          <p>Escolha os confrontos e leve o Brasil ao topo do mundo.</p>
           <button class="btn btn-primary" tabindex="-1">Jogar</button>
         </article>
 
-        <article class="game-card" onclick="openGame('comparacao')" tabindex="0" id="card-comparacao">
+        <article class="game-card" style="opacity: 0.6; pointer-events: none;" id="card-comparacao">
           <span class="game-icon">⚖️</span>
-          <div class="game-badge">Mini game</div>
+          <div class="game-badge" style="background: var(--text-faint); color: #fff;">Em breve</div>
           <h3>Comparar com o Técnico</h3>
           <p>Veja quantos nomes da sua convocação batem com a lista oficial.</p>
-          <button class="btn btn-primary" tabindex="-1">Jogar</button>
+          <button class="btn btn-primary" disabled style="background: var(--text-faint);">Em breve</button>
         </article>
 
-        <article class="game-card" onclick="openGame('bolao')" tabindex="0" id="card-bolao">
+        <article class="game-card" style="opacity: 0.6; pointer-events: none;" id="card-bolao">
           <span class="game-icon">🎯</span>
-          <div class="game-badge">Em breve</div>
+          <div class="game-badge" style="background: var(--text-faint); color: #fff;">Em breve</div>
           <h3>Bolão</h3>
           <p>Faça seus palpites e dispute com amigos em um ranking em tempo real.</p>
-          <button class="btn btn-ghost" tabindex="-1">Em breve</button>
+          <button class="btn btn-primary" disabled style="background: var(--text-faint);">Em breve</button>
         </article>
 
       </div>
@@ -108,7 +113,7 @@
     const eggBall = document.getElementById('eggBall');
     const eggOverlay = document.getElementById('eggOverlay');
 
-    eggBall.addEventListener('click', function() {
+    eggBall.addEventListener('click', function () {
       eggClicks++;
       // Tiny shake feedback
       eggBall.style.transform = 'scale(0.88) rotate(-8deg)';
@@ -133,17 +138,17 @@
     function spawnEggConfetti() {
       const container = document.getElementById('eggConfetti');
       container.innerHTML = '';
-      const colors = ['#22c55e','#facc15','#f97316','#ec4899','#60a5fa','#a78bfa'];
+      const colors = ['#22c55e', '#facc15', '#f97316', '#ec4899', '#60a5fa', '#a78bfa'];
       for (let i = 0; i < 24; i++) {
         const dot = document.createElement('div');
         dot.className = 'egg-dot';
         dot.style.cssText = `
-          left:${Math.random()*100}%;
-          top:${Math.random()*40}%;
-          background:${colors[Math.floor(Math.random()*colors.length)]};
-          animation-delay:${(Math.random()*0.4).toFixed(2)}s;
-          animation-duration:${(0.8+Math.random()*0.6).toFixed(2)}s;
-          width:${6+Math.random()*6}px;height:${6+Math.random()*6}px;
+          left:${Math.random() * 100}%;
+          top:${Math.random() * 40}%;
+          background:${colors[Math.floor(Math.random() * colors.length)]};
+          animation-delay:${(Math.random() * 0.4).toFixed(2)}s;
+          animation-duration:${(0.8 + Math.random() * 0.6).toFixed(2)}s;
+          width:${6 + Math.random() * 6}px;height:${6 + Math.random() * 6}px;
         `;
         container.appendChild(dot);
       }
@@ -158,10 +163,10 @@
         p.className = 'particle';
         const size = 4 + Math.random() * 8;
         p.style.cssText = `
-          left:${Math.random()*100}%;
+          left:${Math.random() * 100}%;
           width:${size}px; height:${size}px;
-          animation-duration:${6+Math.random()*8}s;
-          animation-delay:${(Math.random()*8).toFixed(1)}s;
+          animation-duration:${6 + Math.random() * 8}s;
+          animation-delay:${(Math.random() * 8).toFixed(1)}s;
         `;
         container.appendChild(p);
       }
@@ -175,4 +180,5 @@
     });
   </script>
 </body>
+
 </html>

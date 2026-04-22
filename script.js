@@ -79,25 +79,7 @@ let activeFilter="ALL";
 let searchQuery="";
 let celebrationDone=false;
 
-const officialSquadIds=[1,2,3,4,5,6,7,34,59,8,10,11,41,12,13,16,45,60,19,21,18,24,27,51,52,74];
-const simMatches=[
-  {id:"arg",label:"Brasil vs Argentina"},
-  {id:"fra",label:"Brasil vs Franca"},
-  {id:"ale",label:"Brasil vs Alemanha"}
-];
-const simResults=["vitoria","empate","derrota"];
-const simLabels={vitoria:"Vitoria",empate:"Empate",derrota:"Derrota"};
-const simPoints={vitoria:3,empate:1,derrota:0};
-const quizQuestions=[
-  {q:"Qual selecao venceu a Copa de 2002?",options:["Brasil","Argentina","Alemanha"],answer:0},
-  {q:"Quem e o maior artilheiro da historia das Copas pela selecao brasileira?",options:["Ronaldo","Pele","Neymar"],answer:0},
-  {q:"Em qual ano o Brasil venceu sua primeira Copa do Mundo?",options:["1958","1962","1970"],answer:0},
-  {q:"Qual tecnico comandou o Brasil no penta de 2002?",options:["Tite","Felipao","Parreira"],answer:1},
-  {q:"Quem marcou os dois gols do Brasil na final da Copa de 2002?",options:["Rivaldo","Ronaldinho","Ronaldo"],answer:2}
-];
-
-let simChoices={arg:null,fra:null,ale:null};
-let quizState={index:0,score:0,locked:false,finished:false};
+// ... (lógica de escalação continua abaixo)
 
 function getInitials(n){return n.split(" ").map(x=>x[0]).slice(0,2).join("").toUpperCase();}
 
@@ -159,10 +141,10 @@ function calcMood(){
 }
 
 function getMoodState(s){
-  if(s>=82) return {label:"Confiante", color:"#16a34a"};
-  if(s>=63) return {label:"Satisfeito", color:"#84cc16"};
-  if(s>=44) return {label:"Neutro", color:"#f59e0b"};
-  if(s>=25) return {label:"Irritado", color:"#ef4444"};
+  if(s>=70) return {label:"Confiante", color:"#16a34a"};
+  if(s>=50) return {label:"Satisfeito", color:"#84cc16"};
+  if(s>=35) return {label:"Neutro", color:"#f59e0b"};
+  if(s>=20) return {label:"Irritado", color:"#ef4444"};
   return {label:"Revoltado", color:"#dc2626"};
 }
 
@@ -171,10 +153,10 @@ function drawCoach(score,celebrating){
   if(el && el.tagName==="IMG"){
     let imgName="normal.jpg";
     if(celebrating) imgName="feliz.jpg";
-    else if(score>=82) imgName="feliz.jpg";
-    else if(score>=63) imgName="pouco_feliz.jpg";
-    else if(score>=44) imgName="normal.jpg";
-    else if(score>=25) imgName="raiva.jpg";
+    else if(score>=70) imgName="feliz.jpg";
+    else if(score>=50) imgName="pouco_feliz.jpg";
+    else if(score>=35) imgName="normal.jpg";
+    else if(score>=20) imgName="raiva.jpg";
     else imgName="triste.jpg";
     el.src = "img/" + imgName;
     return;
@@ -320,7 +302,7 @@ function renderPlayerList(){
   }
   wrap.innerHTML=filtered.map(p=>{
     const inSquad=squad.find(s=>s.id===p.id);
-    const avatarHtml = p.photo ? `<div class="p-avatar" style="background:${p.color}18;color:${p.color}"><img src="${p.photo}" alt="${p.name}"/></div>` : `<div class="p-avatar" style="background:${p.color}18;color:${p.color}">${getInitials(p.name)}</div>`;
+    const avatarHtml = p.photo ? `<div class="p-avatar" style="color:${p.color}"><img src="${p.photo}" alt="${p.name}" onerror="this.style.display='none'; this.parentElement.innerText='${getInitials(p.name)}'"/></div>` : `<div class="p-avatar" style="color:${p.color}">${getInitials(p.name)}</div>`;
     return `<div class="p-card ${inSquad?"in-squad":""}" onclick="togglePlayer(${p.id})">
       ${avatarHtml}
       <div class="p-info">
@@ -349,7 +331,7 @@ function renderSquad(){
     for(let i=0;i<grp.slots;i++){
       const p=inGroup[i];
       if(p){
-         const slotAvatar = p.photo ? `<div class="slot-avatar"><img src="${p.photo}" alt="${p.name}"/></div>` : `<div class="slot-avatar" style="background:${p.color}15;color:${p.color}">${getInitials(p.name)}</div>`;
+         const slotAvatar = p.photo ? `<div class="slot-avatar"><img src="${p.photo}" alt="${p.name}" onerror="this.style.display='none'; this.parentElement.innerText='${getInitials(p.name)}'"/></div>` : `<div class="slot-avatar" style="color:${p.color}">${getInitials(p.name)}</div>`;
          html+=`<div class="squad-slot filled" title="Remover ${p.name}" onclick="removePlayer(${p.id})">
            <div class="slot-num">${num}</div>
            ${slotAvatar}
@@ -447,136 +429,15 @@ function copyCoachComparison(hits,similarity){
   copyTextToClipboard(text,"Resultado da comparacao copiado!");
 }
 
-function renderSimulator(){
-  const wrap=document.getElementById("simList");
-  if(!wrap)return;
-  wrap.innerHTML=simMatches.map(match=>`<div class="sim-row">
-      <div class="sim-row-title">${match.label}</div>
-      <div class="sim-options">
-        ${simResults.map(result=>`<button class="sim-option ${simChoices[match.id]===result?"active":""}" onclick="setSimChoice('${match.id}','${result}')">${simLabels[result]}</button>`).join("")}
-      </div>
-    </div>`).join("");
-}
-
-function setSimChoice(matchId,result){
-  simChoices[matchId]=result;
-  saveMiniGameState();
-  renderSimulator();
-}
-
-function getTournamentStage(totalPoints){
-  if(totalPoints<=1)return {label:"Eliminado na fase de grupos",emoji:"😢"};
-  if(totalPoints<=4)return {label:"Quartas de final",emoji:"🙂"};
-  if(totalPoints<=6)return {label:"Semifinal",emoji:"🔥"};
-  if(totalPoints<=8)return {label:"Final",emoji:"🏆"};
-  return {label:"Campeao",emoji:"🇧🇷"};
-}
-
-function runTournamentSimulator(){
-  const allPicked=simMatches.every(m=>Boolean(simChoices[m.id]));
-  if(!allPicked){
-    showToast("Escolha um resultado para cada jogo.");
-    return;
-  }
-  const points=simMatches.reduce((sum,m)=>sum+simPoints[simChoices[m.id]],0);
-  const stage=getTournamentStage(points);
-  const result=document.getElementById("simResult");
-  result.innerHTML=`
-    <div class="sim-score">
-      <strong>${stage.emoji} ${stage.label}</strong>
-      <p>Pontuacao simulada: ${points} de 9</p>
-    </div>
-    <button class="mini-copy" onclick="copySimulationResult('${stage.label}',${points})">Copiar campanha</button>
-  `;
-}
-
-function copySimulationResult(stage,points){
-  const text=`No simulador da Copa eu cheguei em: ${stage}. Pontuacao: ${points}/9.`;
-  copyTextToClipboard(text,"Campanha copiada!");
-}
-
-function getQuizBestScore(){
-  const best=Number(localStorage.getItem("copa26_quizBest")||0);
-  return Number.isFinite(best)?best:0;
-}
-
-function getQuizLevel(score){
-  if(score<=2)return "Torcedor casual";
-  if(score<=4)return "Entende bem";
-  return "Especialista";
-}
-
-function renderQuiz(){
-  const wrap=document.getElementById("quizWrap");
-  if(!wrap)return;
-  if(quizState.finished){
-    const level=getQuizLevel(quizState.score);
-    const best=Math.max(getQuizBestScore(),quizState.score);
-    localStorage.setItem("copa26_quizBest",String(best));
-    wrap.innerHTML=`
-      <div class="quiz-result">
-        <strong>Voce acertou ${quizState.score} de ${quizQuestions.length}</strong>
-        <p>Nivel: ${level}</p>
-        <p>Melhor pontuacao salva: ${best}/${quizQuestions.length}</p>
-      </div>
-      <div class="quiz-actions">
-        <button class="mini-btn" onclick="restartQuiz()">Jogar de novo</button>
-        <button class="mini-copy" onclick="copyQuizResult(${quizState.score},'${level}')">Copiar resultado</button>
-      </div>
-    `;
-    saveMiniGameState();
-    return;
-  }
-  const current=quizQuestions[quizState.index];
-  wrap.innerHTML=`
-    <div class="quiz-progress">Pergunta ${quizState.index+1} de ${quizQuestions.length}</div>
-    <div class="quiz-question">${current.q}</div>
-    <div class="quiz-options">
-      ${current.options.map((opt,i)=>`<button id="quizOpt${i}" class="quiz-option" onclick="answerQuiz(${i})">${opt}</button>`).join("")}
-    </div>
-  `;
-}
-
-function answerQuiz(optionIndex){
-  if(quizState.locked||quizState.finished)return;
-  quizState.locked=true;
-  const current=quizQuestions[quizState.index];
-  const isCorrect=optionIndex===current.answer;
-  if(isCorrect)quizState.score++;
-
-  current.options.forEach((_opt,i)=>{
-    const btn=document.getElementById(`quizOpt${i}`);
-    if(!btn)return;
-    if(i===current.answer)btn.classList.add("correct");
-    else if(i===optionIndex)btn.classList.add("wrong");
-    btn.disabled=true;
-  });
-
-  setTimeout(()=>{
-    quizState.index++;
-    quizState.locked=false;
-    if(quizState.index>=quizQuestions.length){
-      quizState.finished=true;
-      showToast("Quiz finalizado!");
-    }
-    renderQuiz();
-  },700);
-}
-
-function restartQuiz(){
-  quizState={index:0,score:0,locked:false,finished:false};
-  renderQuiz();
-}
-
-function copyQuizResult(score,level){
-  const text=`No quiz rapido da Copa eu fiz ${score}/5. Nivel: ${level}.`;
-  copyTextToClipboard(text,"Resultado do quiz copiado!");
-}
+// Funções de compartilhamento e utilitários
 
 function buildShareCard(){
   const score=Math.round(calcMood());
   const state=getMoodState(score);
-  document.getElementById("scMood").innerHTML=`<div class="sc-mood-pct" style="color:${state.color}">${state.label}</div>`;
+  document.getElementById("scMood").innerHTML=`
+    <div class="sc-mood-pct" style="color:${state.color}">${score}%</div>
+    <div class="sc-mood-label">${state.label}</div>
+  `;
   let html="";
   Object.entries(groups).forEach(([posKey,grp])=>{
     const inGroup=squad.filter(p=>p.pos===posKey);
@@ -631,9 +492,6 @@ function initRulesModal(){
 }
 
 // Inicialização
-loadMiniGameState();
+// Inicialização
 initRulesModal();
 renderTabs();renderPlayerList();renderSquad();updateMood();
-updateMiniGamesState();
-renderSimulator();
-renderQuiz();

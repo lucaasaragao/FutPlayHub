@@ -1,177 +1,496 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Simulador | Mini Games da Copa 26</title>
-  <meta name="description" content="Simule a campanha do Brasil na Copa 2026 escolhendo os resultados de cada jogo."/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Chaveamento | Copa 26</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="home.css"/>
+  <link rel="stylesheet" href="home.css" />
   <script src="theme.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    .sim-shell { max-width: 600px; margin: 0 auto; }
+    :root {
+      --bracket-bg: var(--card);
+      --match-bg: var(--bg);
+      --match-border: var(--border);
+    }
 
-    .sim-game-card {
+    .sim-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-bottom: 80px;
+    }
+
+    /* ── PROGRESS INDICATOR ── */
+    .sim-progress-bar {
+      margin-top: 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      height: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .sim-progress-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width .5s cubic-bezier(.4, 0, .2, 1);
+      box-shadow: 0 0 12px var(--glow-primary);
+    }
+
+    .sim-progress-text {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 8px;
+      text-align: right;
+      letter-spacing: .05em;
+    }
+
+    /* ── GRUPOS ── */
+    .groups-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .group-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 28px 24px;
-      box-shadow: var(--shadow-md);
-      transition: background var(--transition), border-color var(--transition);
-      animation: fadeSlideIn .4s ease .15s both;
+      padding: 20px;
+      transition: all .3s cubic-bezier(.4, 0, .2, 1);
     }
 
-    /* ── match card ── */
-    .sim-match-row {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-      transition: all var(--transition);
-    }
-    .sim-match-row:hover { border-color: var(--border-muted); }
-
-    .sim-match-meta {
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 8px; flex-wrap: wrap;
-    }
-    .sim-round-badge {
-      font-size: 10px; font-weight: 800; letter-spacing: .06em;
-      text-transform: uppercase;
-      background: var(--primary-light); color: var(--primary);
-      border: 1px solid var(--primary);
-      border-radius: 20px; padding: 2px 9px;
-    }
-    .sim-match-date {
-      font-size: 11px; color: var(--text-muted); font-weight: 600;
+    .group-card.complete {
+      border-color: var(--primary);
+      background: var(--primary-light);
     }
 
-    .sim-match-label {
+    .group-title {
       font-family: 'Syne', sans-serif;
-      font-size: 16px; font-weight: 800;
+      font-size: 18px;
+      font-weight: 800;
       color: var(--text);
-      margin-bottom: 4px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .sim-flag { font-size: 22px; }
-
-    .sim-venue {
-      font-size: 11px; color: var(--text-muted);
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-muted);
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      transition: color .3s;
     }
 
-    .sim-pick-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0; }
+    .group-card.complete .group-title {
+      color: var(--primary);
+    }
 
-    .sim-pick-btn {
-      flex: 1; min-width: 80px;
-      padding: 10px 8px;
+    .team-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
       border-radius: 10px;
+      margin-bottom: 6px;
+      background: var(--bg);
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .team-item:hover {
+      border-color: var(--border-muted);
+      transform: scale(1.02);
+    }
+
+    .team-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .team-rank-picks {
+      display: flex;
+      gap: 4px;
+    }
+
+    .rank-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
       border: 1.5px solid var(--border-muted);
       background: var(--card);
       color: var(--text-muted);
-      font-size: 13px; font-weight: 700;
-      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+    }
+
+    .rank-btn:hover {
+      border-color: var(--text-muted);
+    }
+
+    .rank-btn.active.first {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px var(--glow-primary);
+    }
+
+    .rank-btn.active.second {
+      background: #facc15;
+      color: #1a0f00;
+      border-color: #facc15;
+      box-shadow: 0 4px 12px rgba(250, 204, 21, 0.3);
+    }
+
+    /* ── CHAVEAMENTO (BRACKET) ── */
+    .bracket-container {
+      margin-top: 20px;
+      overflow-x: auto;
+      padding: 40px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 600px;
+    }
+
+    .bracket-wrapper {
+      display: grid;
+      grid-template-columns: repeat(5, 180px);
+      align-items: center;
+      gap: 0 30px;
+    }
+
+    .round-column {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      height: 100%;
+      gap: 16px;
+    }
+
+    .match-box {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--match-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      animation: fadeIn .4s ease;
+      transition: all .3s;
+    }
+
+    .match-box:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .match-team {
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       cursor: pointer;
       transition: all .18s;
-      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      position: relative;
     }
-    .sim-pick-btn:hover { transform: translateY(-2px); }
-    .sim-pick-btn.vitoria {
-      border-color: var(--primary); background: var(--primary-light); color: var(--primary);
-    }
-    .sim-pick-btn.empate {
-      border-color: var(--accent); background: var(--accent-light); color: var(--accent);
-    }
-    .sim-pick-btn.derrota {
-      border-color: var(--danger); background: var(--danger-light); color: var(--danger);
-    }
-    .sim-pick-btn.active.vitoria  { box-shadow: 0 4px 14px var(--glow-primary); }
-    .sim-pick-btn.active.empate   { box-shadow: 0 4px 14px rgba(202,138,4,.25); }
-    .sim-pick-btn.active.derrota  { box-shadow: 0 4px 14px rgba(239,68,68,.2); }
 
-    /* ── score input ── */
-    .sim-score-row {
-      display: flex; align-items: center; gap: 10px;
-      margin-top: 12px; flex-wrap: wrap;
+    .match-team:first-child {
+      border-bottom: 1px solid var(--border-muted);
     }
-    .sim-score-label {
-      font-size: 12px; font-weight: 700; color: var(--text-muted);
+
+    .match-team:hover {
+      background: var(--bg);
     }
-    .sim-score-inputs {
-      display: flex; align-items: center; gap: 6px;
+
+    .match-team.winner {
+      background: var(--primary-light);
+      color: var(--primary);
     }
-    .sim-score-input {
-      width: 52px; text-align: center;
-      padding: 6px 8px; border-radius: 8px;
-      border: 1.5px solid var(--border-muted);
-      background: var(--card); color: var(--text);
-      font-size: 16px; font-weight: 800;
+
+    .match-team.winner::after {
+      content: '✓';
+      position: absolute;
+      right: 8px;
+      font-size: 10px;
+    }
+
+    .match-team.winner .team-name {
+      color: var(--primary);
+    }
+
+    /* Highlight Path do Campeão */
+    .match-team.path-highlight {
+      background: var(--primary);
+      color: #fff !important;
+      box-shadow: 0 0 15px var(--glow-primary);
+    }
+
+    .match-team.path-highlight .team-name {
+      color: #fff !important;
+    }
+
+    .round-title {
       font-family: 'Syne', sans-serif;
-      transition: border-color .18s;
-      -moz-appearance: textfield;
-    }
-    .sim-score-input::-webkit-inner-spin-button,
-    .sim-score-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-    .sim-score-input:focus {
-      outline: none; border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--glow-primary);
-    }
-    .sim-score-sep {
-      font-size: 18px; font-weight: 800; color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      text-align: center;
+      margin-bottom: 8px;
     }
 
-    /* ── result box ── */
-    .sim-result-box {
-      margin-top: 16px; padding: 24px 20px;
+    /* ── FINAL & CHAMPION ── */
+    .champ-section {
+      text-align: center;
+      margin-top: 40px;
+      padding: 60px 40px;
+      background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg) 100%);
+      border-radius: 32px;
+      border: 2px solid var(--primary);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+      animation: slideUp .6s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .champ-emoji {
+      font-size: 84px;
+      display: block;
+      margin-bottom: 15px;
+      animation: eggBounce 1s infinite alternate;
+    }
+
+    .champ-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: -0.04em;
+      margin-bottom: 5px;
+    }
+
+    .champ-sub {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    /* ── SHARE CARD ── */
+    #shareCard {
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      width: 1080px;
+      height: 1920px;
+      background: #031a0c;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+      padding: 80px;
+    }
+
+    .sc-field {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, #16a34a 0%, transparent 70%),
+        linear-gradient(180deg, #052e16, #02140c);
+      z-index: -1;
+    }
+
+    .sc-crown {
+      font-size: 160px;
+      margin-bottom: 40px;
+    }
+
+    .sc-title {
+      font-size: 80px;
+      font-weight: 900;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .sc-champ-flag {
+      font-size: 240px;
+      line-height: 1;
+    }
+
+    .sc-champ-name {
+      font-size: 120px;
+      font-weight: 900;
+      color: #ffd600;
+      margin-top: 20px;
+    }
+
+    .sc-footer {
+      position: absolute;
+      bottom: 100px;
+      font-size: 42px;
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 700;
+    }
+
+    /* Mobile Fallback */
+    @media (max-width: 900px) {
+      .bracket-wrapper {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 40px;
+      }
+
+      .round-column {
+        width: 100%;
+      }
+
+      .round-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--primary);
+        text-align: center;
+        margin-bottom: 20px;
+      }
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      padding: 4px;
+      background: var(--bg);
       border-radius: 14px;
-      background: var(--bg); border: 1px solid var(--border);
-      text-align: center;
-      animation: fadeSlideIn .4s ease;
-    }
-    .sim-result-emoji { font-size: 52px; display: block; margin-bottom: 10px; }
-    .sim-result-stage {
-      font-family: 'Syne', sans-serif;
-      font-size: 22px; font-weight: 800; color: var(--text);
-      margin-bottom: 4px;
-    }
-    .sim-result-pts { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
-
-    .sim-score-summary {
-      display: inline-flex; flex-direction: column; gap: 4px;
-      text-align: left; margin-bottom: 16px;
-    }
-    .res-row { font-size: 13px; color: var(--text-muted); }
-    .res-score {
-      font-weight: 800; color: var(--text);
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 6px; padding: 1px 6px; margin-left: 4px;
+      border: 1px solid var(--border);
     }
 
-    .sim-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .tab-btn.active {
+      background: var(--card);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-btn.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .sticky-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+    }
   </style>
 </head>
+
 <body>
   <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
 
   <main class="home sim-shell">
-
     <section class="hero" style="margin-bottom:20px">
-      <div class="kicker">🏆 Mini game</div>
-      <h1>Simulador<br>do Brasil</h1>
-      <p>Escolha vitória, empate ou derrota para cada confronto e descubra onde a Seleção chega.</p>
-      <div class="hero-actions">
+      <div class="kicker">🏆 Mundial 2026</div>
+      <h1 id="pageTitle">Simulador de<br>Chaveamento</h1>
+      <p id="pageSubtitle">Defina os classificados dos grupos e simule o mata-mata até o Hexa!</p>
+      
+      <div class="hero-actions" style="margin-top: 20px;">
         <button class="btn btn-ghost" id="btnVoltar" onclick="window.location.href='index.html'">← Voltar</button>
+      </div>
+
+      <div class="nav-tabs" id="simTabs">
+        <button class="tab-btn active" onclick="showView('groups')" id="tabGroups">1. Grupos</button>
+        <button class="tab-btn disabled" id="tabBracket" onclick="showView('bracket')">2. Mata-mata</button>
       </div>
     </section>
 
-    <div class="sim-game-card">
-      <div id="simulatorRoot"></div>
+    <div id="viewGroups" class="view-section">
+      <div class="sim-progress-bar">
+        <div class="sim-progress-fill" id="progressFill"></div>
+      </div>
+      <div class="sim-progress-text" id="progressText">0/8 grupos definidos</div>
+
+      <div class="groups-grid" id="groupsGrid"></div>
+      <div style="height: 100px;"></div> <!-- Spacer for sticky btn -->
+    </div>
+
+    <!-- VIEW: BRACKET -->
+    <div id="viewBracket" class="view-section" style="display:none">
+      <div class="bracket-container">
+        <div class="bracket-wrapper" id="bracketWrapper"></div>
+      </div>
+
+      <div id="champResult" style="display:none">
+        <div class="champ-section">
+          <span class="champ-emoji">🏆</span>
+          <div style="font-size: 14px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Campeão
+            Mundial</div>
+          <div class="champ-name" id="champName">BRASIL</div>
+          <div id="brasilBadge" style="margin-top:10px"></div>
+
+          <div class="sim-actions" style="margin-top:30px">
+            <button class="btn btn-primary" onclick="generateShareImage()">📸 Baixar Resultado</button>
+            <button class="btn btn-ghost" onclick="resetSimulator()">🔄 Simular de novo</button>
+          </div>
+        </div>
+      </div>
     </div>
 
   </main>
 
+  <!-- STICKY FOOTER PARA AVANÇAR -->
+  <div class="sticky-footer" id="stickyNext" style="display:none">
+    <button class="btn btn-primary" style="width: 100%; max-width: 400px;" onclick="goToBracket()">
+      Gerar Chaveamento →
+    </button>
+  </div>
+
+  <!-- SHARE CARD (OFF-SCREEN) -->
+  <div id="shareCard">
+    <div class="sc-field"></div>
+    <div class="sc-crown">🏆</div>
+    <div class="sc-title">MEU CAMPEÃO DA COPA 2026</div>
+    <div class="sc-champ-flag" id="scFlag"></div>
+    <div class="sc-champ-name" id="scName">BRASIL</div>
+    <div class="sc-footer" id="scBadge">HEXA CONFIRMADO! 🇧🇷</div>
+  </div>
+
   <script src="simulador.js"></script>
 </body>
+
 </html>

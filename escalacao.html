@@ -1,151 +1,703 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Escalação | Mini Games da Copa 2026</title>
-  <meta name="description" content="Monte sua convocação da Seleção Brasileira para a Copa 2026."/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escalação | Copa 26</title>
+  <meta name="description" content="Monte sua convocação da Seleção Brasileira para a Copa 2026." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="home.css" />
   <script src="theme.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    /* Estilos Específicos do Jogo de Escalação (Preservados do styles.css) */
+    .main {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      margin-top: 30px;
+    }
+
+    .left-panel {
+      width: 280px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .right-panel {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Coach Card */
+    .coach-card {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .mood-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .coach-svg-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .coach-svg-wrap img {
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .coach-card:hover img {
+      transform: scale(1.05);
+    }
+
+    .mood-bar-wrap {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      height: 10px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .mood-bar {
+      height: 100%;
+      border-radius: 999px;
+      transition: width .7s ease, background .7s ease;
+    }
+
+    .mood-text {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .score-detail {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    /* Search & Filters */
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-faint);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 12px 12px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: all .2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--glow-primary);
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-faint);
+      cursor: pointer;
+      display: none;
+    }
+
+    .search-clear.visible {
+      display: block;
+    }
+
+    .filter-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tab {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .tab:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .tab.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Player List */
+    .list-card {
+      padding: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .list-card::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .list-card::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 10px;
+    }
+
+    .p-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all .2s;
+      margin-bottom: 4px;
+      border: 1.5px solid transparent;
+    }
+
+    .p-card:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    .p-card.in-squad {
+      opacity: .4;
+      pointer-events: none;
+      filter: grayscale(1);
+    }
+
+    .p-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-secondary);
+    }
+
+    .p-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .p-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .p-pos {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Squad Display */
+    .squad-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .squad-header-left span {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      display: block;
+    }
+
+    .squad-header-left p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .squad-body {
+      padding: 20px;
+    }
+
+    .group-title {
+      font-size: 12px;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      font-weight: 900;
+      margin: 24px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .group-title:first-child {
+      margin-top: 0;
+    }
+
+    .group-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .squad-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+
+    .squad-slot {
+      background: var(--bg);
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 64px;
+      transition: all .2s;
+    }
+
+    .squad-slot.filled {
+      background: var(--card);
+      border-style: solid;
+      border-color: var(--primary);
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .squad-slot.filled:hover {
+      border-color: var(--danger);
+      background: var(--danger-light);
+      transform: scale(1.02);
+    }
+
+    .slot-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-secondary);
+    }
+
+    .slot-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .slot-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .slot-pos {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .empty-slot-text {
+      font-size: 12px;
+      color: var(--text-faint);
+      font-weight: 600;
+    }
+
+    /* Rules Modal Unificado */
+    .rules-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .7);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .rules-overlay.hidden {
+      display: none;
+    }
+
+    .rules-modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+      animation: modalIn .3s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(.9) translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .rules-modal h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+
+    .rules-modal-list {
+      list-style: none;
+      margin-bottom: 30px;
+    }
+
+    .rules-modal-list li {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 12px;
+      padding-left: 28px;
+      position: relative;
+    }
+
+    .rules-modal-list li::before {
+      content: '⚽';
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    .rules-modal-btn {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all .2s;
+      box-shadow: 0 8px 20px var(--glow-primary);
+    }
+
+    .rules-modal-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    /* Share Card Design Unificado */
+    #shareCard {
+      position: fixed;
+      top: 0;
+      left: -9999px;
+      width: 1080px;
+      height: 1920px;
+      background: linear-gradient(180deg, #052e16 0%, #02140c 100%);
+      padding: 80px;
+      font-family: 'Montserrat', sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sc-header {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      margin-bottom: 60px;
+      padding-bottom: 40px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sc-flag {
+      font-size: 80px;
+    }
+
+    .sc-title {
+      font-size: 72px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -2px;
+    }
+
+    .sc-sub {
+      font-size: 32px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 10px;
+    }
+
+    .sc-mood {
+      margin-left: auto;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 40px;
+      padding: 30px 50px;
+      text-align: center;
+    }
+
+    .sc-mood-pct {
+      font-size: 80px;
+      font-weight: 900;
+      color: #facc15;
+    }
+
+    .sc-mood-label {
+      font-size: 28px;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      margin-top: 10px;
+    }
+
+    .sc-groups {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px;
+      flex: 1;
+    }
+
+    .sc-group-title {
+      font-size: 24px;
+      color: #22c55e;
+      text-transform: uppercase;
+      font-weight: 900;
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+      border-left: 6px solid #22c55e;
+      padding-left: 15px;
+    }
+
+    .sc-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sc-player {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 15px 20px;
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .sc-footer {
+      margin-top: 60px;
+      text-align: center;
+      font-size: 32px;
+      color: rgba(255, 255, 255, 0.3);
+      font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+      .main {
+        flex-direction: column;
+      }
+
+      .left-panel {
+        width: 100%;
+      }
+
+      .squad-row {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      }
+    }
+  </style>
 </head>
+
 <body>
 
   <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
-
   <canvas id="confetti-canvas"></canvas>
 
-  <div class="app">
+  <main class="home sim-shell" style="max-width: 1100px; padding-top: 10px;">
 
-    <!-- Nav -->
-    <nav class="nav-bar">
-      <button class="nav-btn" id="btnInicio" onclick="window.location.href='index.html'">← Início</button>
-    </nav>
+    <!-- Hero Unificado -->
+    <section class="hero" style="margin-bottom:20px; margin-top: -120px; ">
+      <div class="kicker">Sua Convocação</div>
+      <h1>Os seus 26 para a Copa</h1>
+      <p>Monte sua convocação ideal para o Mundial de 2026 e veja se o técnico aprova suas escolhas!</p>
+
+      <div class="hero-actions"
+        style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <button class="btn btn-ghost" id="btnInicio" onclick="window.location.href='index.html'">← Voltar</button>
+        <div class="counter-badge" id="counterBadge"
+          style="background: var(--primary); color: #fff; padding: 10px 24px; border-radius: 999px; font-weight: 900; font-size: 18px; border: 3px solid var(--border);">
+          0 / 26</div>
+      </div>
+    </section>
 
     <!-- Rules Modal -->
     <div class="rules-overlay" id="rulesOverlay">
       <div class="rules-modal">
-        <div class="rules-modal-header">
-          <span class="rules-modal-icon">⚽</span>
-          <h2>Como funciona</h2>
-        </div>
+        <h2>Como funciona? 📋</h2>
         <ul class="rules-modal-list">
-          <li>Escolha os <strong>26 jogadores</strong> que você levaria para a Copa</li>
-          <li>Cada decisão impacta o <strong>humor do técnico</strong> 😄😐😡</li>
-          <li>Mandou bem? Ele aprova. Pisou na bola? Ele não perdoa</li>
-          <li>Só estão disponíveis jogadores no <strong>radar da seleção</strong></li>
+          <li>Escolha os <strong>26 jogadores</strong> da sua convocação.</li>
+          <li>Cada escolha afeta o <strong>humor do técnico</strong>.</li>
+          <li>Cuidado: levar jogadores polêmicos ou sem ritmo pode irritar o "professor"!</li>
+          <li>Complete a lista para baixar seu card oficial.</li>
         </ul>
-        <button class="rules-modal-btn" onclick="dismissRulesModal()">Entendi, vamos lá! 🔥</button>
+        <button class="rules-modal-btn" onclick="dismissRulesModal()">Entendi, vamos escalar! 🔥</button>
       </div>
     </div>
 
-    <!-- Header -->
-    <div class="header">
-      <div class="header-left">
-        <div>
-          <h1>🇧🇷 Os seus 26 da Copa</h1>
-          <div class="header-sub">Monte sua convocação da Seleção Brasileira</div>
-        </div>
-      </div>
-      <div class="counter-badge" id="counterBadge">0 / 26</div>
-    </div>
-
-    <!-- Main Layout -->
+    <!-- Main Game Layout -->
     <div class="main">
       <!-- Left Panel -->
       <div class="left-panel">
 
-        <!-- Coach mood card -->
+        <!-- Humor do Técnico -->
         <div class="card coach-card">
-          <div class="mood-label">Humor do técnico</div>
+          <div class="mood-label">Aprovação do Técnico</div>
           <div class="coach-svg-wrap" id="coachSvgWrap">
-            <img id="coachSvg" src="img/normal.jpg" width="96" height="96" alt="Técnico"/>
+            <img id="coachSvg" src="img/normal.jpg" width="100" height="100" alt="Técnico" />
           </div>
           <div class="mood-bar-wrap">
-            <div class="mood-bar" id="moodBar" style="width:50%;background:#f59e0b"></div>
+            <div class="mood-bar" id="moodBar" style="width:50%; background:#f59e0b"></div>
           </div>
           <div class="mood-text" id="moodText">Neutro</div>
           <div class="score-detail" id="scoreDetail">50 / 100</div>
         </div>
 
-        <!-- Search -->
-        <div class="card" style="padding:12px">
-          <div class="filter-label" style="margin-bottom:9px">Buscar jogador</div>
+        <!-- Filtros -->
+        <div class="card" style="padding:15px">
+          <div class="filter-label">Buscar Jogador</div>
           <div class="search-wrap">
-            <div class="search-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-            </div>
-            <input class="search-input" id="searchInput" type="text" placeholder="Nome do jogador..." oninput="handleSearch(this.value)" autocomplete="off"/>
+            <div class="search-icon">🔍</div>
+            <input class="search-input" id="searchInput" type="text" placeholder="Nome do craque..."
+              oninput="handleSearch(this.value)" autocomplete="off" />
             <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
           </div>
         </div>
 
-        <!-- Position Tabs -->
-        <div class="card" style="padding:12px">
-          <div class="filter-label">Posição</div>
+        <div class="card" style="padding:15px">
+          <div class="filter-label">Filtrar por Posição</div>
           <div class="tabs" id="tabsContainer"></div>
         </div>
 
-        <!-- Player List -->
         <div class="card list-card" id="playerListWrap"></div>
-
       </div>
 
       <!-- Right Panel -->
       <div class="right-panel">
+        <div class="card" style="padding: 0;">
+          <div class="squad-header">
+            <div class="squad-header-left">
+              <span>Sua Lista de Convocados</span>
+              <p>Toque em um jogador para removê-lo da lista</p>
+            </div>
+            <button class="btn btn-primary" id="shareBtn" disabled onclick="handleShare()" style="padding: 12px 24px;">
+              📸 Baixar Card
+            </button>
+          </div>
 
-        <div class="card squad-header">
-          <div class="squad-header-left">
-            <span>Sua convocação</span>
-            <p>Clique em um convocado para remover</p>
+          <div class="squad-body" id="squadGroups"></div>
+
+          <div style="padding: 20px; border-top: 1px solid var(--border); text-align: center;" id="resultText">
+            Selecione 26 jogadores para finalizar sua convocação.
           </div>
         </div>
-
-        <div class="card squad-body" id="squadGroups"></div>
-
-        <div class="card share-bar">
-          <button class="share-btn" id="shareBtn" disabled onclick="handleShare()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-              <polyline points="16 6 12 2 8 6"/>
-              <line x1="12" y1="2" x2="12" y2="15"/>
-            </svg>
-            Baixar card
-          </button>
-          <div class="result-text" id="resultText">Escolha 26 jogadores para sua convocação</div>
-        </div>
-
       </div>
     </div>
 
-    <footer class="app-footer">
-      <div class="footer-content">
-        <div class="footer-copyright">© 2026 Lucas Aragão</div>
-      </div>
-    </footer>
-
-    <!-- Share Card (hidden, for image generation) -->
+    <!-- Share Card Hidden -->
     <div id="shareCard">
       <div class="sc-header">
-        <div class="sc-flag">🇧🇷</div>
         <div>
-          <div class="sc-title">Os 26 da Copa</div>
-          <div class="sc-sub">Minha convocação da Seleção Brasileira</div>
+          <div class="sc-title">Meus Convocados</div>
+          <div class="sc-sub">Minha Convocação - Copa do Mundo 2026</div>
         </div>
         <div class="sc-mood" id="scMood"></div>
       </div>
       <div class="sc-groups" id="scGroups"></div>
-      <div class="sc-footer">Mini Games da Copa 26 · Qual seria a sua?</div>
+      <div class="sc-footer">Monte a sua em: copa26.com.br</div>
     </div>
 
-  </div>
+  </main>
 
   <div class="toast" id="toast"></div>
 
   <script src="script.js"></script>
 </body>
+
 </html>
