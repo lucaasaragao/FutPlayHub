@@ -524,3 +524,90 @@ body {
   .hero h1 { font-size: 28px; }
   .home { padding: 20px 12px 50px; }
 }
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
+.app-footer {
+  margin-top: 60px;
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.footer-content {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.footer-copyright {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.footer-link:hover {
+  color: var(--primary);
+}
+
+.footer-separator {
+  color: var(--border);
+  font-size: 10px;
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-social span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.social-link {
+  color: var(--text-muted);
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.social-link:hover {
+  color: var(--primary);
+  transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+  .footer-links {
+    justify-content: center;
+  }
+}
