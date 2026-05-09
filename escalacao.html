@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="home.css" />
   <script src="theme.js"></script>
+  <script src="share-utils.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     /* Estilos Específicos do Jogo de Escalação (Preservados do styles.css) */
@@ -354,6 +355,12 @@
       display: block;
     }
 
+    .slot-info {
+      min-width: 0;
+      overflow: hidden;
+      flex: 1;
+    }
+
     .slot-name {
       font-size: 13px;
       font-weight: 700;
@@ -376,97 +383,10 @@
     }
 
     /* Rules Modal Unificado */
-    .rules-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .7);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      padding: 20px;
-    }
-
-    .rules-overlay.hidden {
-      display: none;
-    }
-
-    .rules-modal {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 40px;
-      max-width: 450px;
-      width: 100%;
-      box-shadow: var(--shadow-lg);
-      animation: modalIn .3s cubic-bezier(.34, 1.56, .64, 1);
-    }
-
-    @keyframes modalIn {
-      from {
-        opacity: 0;
-        transform: scale(.9) translateY(30px);
-      }
-
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
-    }
-
-    .rules-modal h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: 24px;
-      font-weight: 800;
-      margin-bottom: 20px;
-      color: var(--text);
-    }
-
-    .rules-modal-list {
-      list-style: none;
-      margin-bottom: 30px;
-    }
-
-    .rules-modal-list li {
-      font-size: 15px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin-bottom: 12px;
-      padding-left: 28px;
-      position: relative;
-    }
-
-    .rules-modal-list li::before {
-      content: '⚽';
-      position: absolute;
-      left: 0;
-      top: 0;
-    }
-
-    .rules-modal-btn {
-      width: 100%;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 16px;
-      padding: 16px;
-      font-size: 16px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: all .2s;
-      box-shadow: 0 8px 20px var(--glow-primary);
-    }
-
-    .rules-modal-btn:hover {
-      background: var(--primary-hover);
-      transform: translateY(-2px);
-    }
-
     /* Share Card Design Unificado */
     #shareCard {
       position: fixed;
-      top: 0;
+      top: -9999px;
       left: -9999px;
       width: 1080px;
       height: 1920px;
@@ -476,97 +396,122 @@
       color: #fff;
       display: flex;
       flex-direction: column;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
-    .sc-header {
+    #shareCard .sc-bg-glow {
+      position: absolute;
+      top: -200px;
+      left: -200px;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,200,80,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    #shareCard .sc-top-stripe {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 12px;
+      background: linear-gradient(90deg, #009b3a, #ffd600, #009b3a);
+    }
+
+    #shareCard .sc-header {
       display: flex;
       align-items: center;
       gap: 30px;
-      margin-bottom: 60px;
-      padding-bottom: 40px;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 48px;
+      padding-bottom: 36px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
     }
 
-    .sc-flag {
+    #shareCard .sc-flag {
       font-size: 80px;
     }
 
-    .sc-title {
-      font-size: 72px;
+    #shareCard .sc-title {
+      font-size: 64px;
       font-weight: 900;
       color: #fff;
       letter-spacing: -2px;
+      line-height: 1.1;
     }
 
-    .sc-sub {
-      font-size: 32px;
-      color: rgba(255, 255, 255, 0.6);
-      margin-top: 10px;
-    }
-
-    .sc-mood {
-      margin-left: auto;
-      background: rgba(255, 255, 255, 0.05);
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      border-radius: 40px;
-      padding: 30px 50px;
-      text-align: center;
-    }
-
-    .sc-mood-pct {
-      font-size: 80px;
-      font-weight: 900;
-      color: #facc15;
-    }
-
-    .sc-mood-label {
+    #shareCard .sc-sub {
       font-size: 28px;
       color: rgba(255, 255, 255, 0.5);
-      text-transform: uppercase;
-      letter-spacing: 4px;
-      margin-top: 10px;
+      margin-top: 8px;
+      letter-spacing: 0.05em;
     }
 
-    .sc-groups {
+    #shareCard .sc-mood {
+      margin-left: auto;
+      background: rgba(255, 255, 255, 0.06);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: 36px;
+      padding: 24px 44px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    #shareCard .sc-mood-pct {
+      font-size: 72px;
+      font-weight: 900;
+    }
+
+    #shareCard .sc-mood-label {
+      font-size: 22px;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-top: 6px;
+    }
+
+    #shareCard .sc-groups {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 40px;
+      gap: 36px;
       flex: 1;
+      align-content: start;
     }
 
-    .sc-group-title {
-      font-size: 24px;
-      color: #22c55e;
+    #shareCard .sc-group-title {
+      font-size: 22px;
+      color: #4ade80;
       text-transform: uppercase;
       font-weight: 900;
       letter-spacing: 3px;
-      margin-bottom: 20px;
-      border-left: 6px solid #22c55e;
-      padding-left: 15px;
+      margin-bottom: 14px;
+      border-left: 5px solid #4ade80;
+      padding-left: 14px;
     }
 
-    .sc-row {
+    #shareCard .sc-row {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .sc-player {
+    #shareCard .sc-player {
       background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 15px 20px;
-      font-size: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 22px;
       font-weight: 700;
       color: #fff;
     }
 
-    .sc-footer {
-      margin-top: 60px;
+    #shareCard .sc-footer {
+      margin-top: 40px;
       text-align: center;
-      font-size: 32px;
+      font-size: 28px;
       color: rgba(255, 255, 255, 0.3);
       font-weight: 600;
+      letter-spacing: 0.04em;
     }
 
     @media (max-width: 900px) {
@@ -588,12 +533,12 @@
 <body>
 
   <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
-  <canvas id="confetti-canvas"></canvas>
+  <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;display:none;"></canvas>
 
   <main class="home sim-shell" style="max-width: 1100px; padding-top: 10px;">
 
     <!-- Hero Unificado -->
-    <section class="hero" style="margin-bottom:20px; margin-top: -120px; ">
+    <section class="hero" style="margin-bottom:20px;">
       <div class="kicker">Sua Convocação</div>
       <h1>Os seus 26 para a Copa</h1>
       <p>Monte sua convocação ideal para o Mundial de 2026 e veja se o técnico aprova suas escolhas!</p>
@@ -682,15 +627,18 @@
 
     <!-- Share Card Hidden -->
     <div id="shareCard">
+      <div class="sc-bg-glow"></div>
+      <div class="sc-top-stripe"></div>
       <div class="sc-header">
+        <div class="sc-flag">🇧🇷</div>
         <div>
           <div class="sc-title">Meus Convocados</div>
-          <div class="sc-sub">Minha Convocação - Copa do Mundo 2026</div>
+          <div class="sc-sub">Copa do Mundo 2026</div>
         </div>
         <div class="sc-mood" id="scMood"></div>
       </div>
       <div class="sc-groups" id="scGroups"></div>
-      <div class="sc-footer">Monte a sua em: copa26.com.br</div>
+      <div class="sc-footer">Sua escalação é diferente? Monte a sua em futplayhub.com.br</div>
     </div>
 
   </main>

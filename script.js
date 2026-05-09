@@ -82,6 +82,7 @@ let celebrationDone=false;
 // ... (lógica de escalação continua abaixo)
 
 function getInitials(n){return n.split(" ").map(x=>x[0]).slice(0,2).join("").toUpperCase();}
+function abbreviateName(n){const parts=n.split(" ");if(parts.length<=1)return n;return parts[0]+" "+parts.slice(1).map(p=>p[0].toUpperCase()+".").join(" ");}
 
 function normalize(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();}
 
@@ -207,8 +208,8 @@ function launchConfetti(){
     x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,
     w:Math.random()*11+5,h:Math.random()*6+3,
     color:colors[Math.floor(Math.random()*colors.length)],
-    rot:Math.random()*360,vx:(Math.random()-0.5)*3,vy:Math.random()*4+2,
-    vr:(Math.random()-0.5)*6,alpha:1
+    rot:Math.random()*360,vx:(Math.random()-0.5)*2,vy:Math.random()*2+1,
+    vr:(Math.random()-0.5)*3,alpha:1
   }));
   let frame=0;
   (function draw(){
@@ -218,10 +219,10 @@ function launchConfetti(){
       ctx.translate(p.x+p.w/2,p.y+p.h/2);ctx.rotate(p.rot*Math.PI/180);
       ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
       ctx.restore();
-      p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;if(frame>80)p.alpha-=0.015;
+      p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;if(frame>180)p.alpha-=0.008;
     });
     frame++;
-    if(frame<145)requestAnimationFrame(draw);
+    if(frame<280)requestAnimationFrame(draw);
     else{ctx.clearRect(0,0,canvas.width,canvas.height);canvas.style.display="none";}
   })();
   if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);
@@ -335,7 +336,7 @@ function renderSquad(){
          html+=`<div class="squad-slot filled" title="Remover ${p.name}" onclick="removePlayer(${p.id})">
            <div class="slot-num">${num}</div>
            ${slotAvatar}
-           <div class="slot-info"><div class="slot-name">${p.name}</div><div class="slot-pos">${p.pos}</div></div>
+           <div class="slot-info"><div class="slot-name">${abbreviateName(p.name)}</div><div class="slot-pos">${p.pos}</div></div>
          </div>`;
        }else{
          html+=`<div class="squad-slot"><div class="slot-num">${num}</div><div class="empty-slot-text">—</div></div>`;
@@ -452,21 +453,29 @@ function buildShareCard(){
 }
 
 async function handleShare(){
-  showToast("Gerando imagem…");
+  const btn=document.getElementById("shareBtn");
+  const oldText=btn.innerHTML;
+  btn.innerHTML="⏳ Gerando...";btn.disabled=true;
   buildShareCard();
   const card=document.getElementById("shareCard");
   card.style.top="0";card.style.left="-9999px";
-  await new Promise(r=>setTimeout(r,120));
+  await new Promise(r=>setTimeout(r,150));
   try{
     const canvas=await html2canvas(card,{backgroundColor:"#052e16",scale:2,useCORS:true,logging:false});
-    const link=document.createElement("a");
-    link.href=canvas.toDataURL("image/png");
-    link.download="minha-convocacao-copa.png";
-    link.click();
-    showToast("Card salvo! Compartilhe nas redes");
+    card.style.top="-9999px";
+    const result=await shareOrDownload(
+      canvas,
+      "minha-convocacao-copa.png",
+      "Montei minha convocação para a Copa 2026! Monte a sua em copa26.com.br"
+    );
+    if(result==="cancelled"){btn.innerHTML=oldText;btn.disabled=false;return;}
+    showToast(result==="shared"?"Compartilhado! ✅":"Card salvo! Compartilhe nas redes 📲");
+    btn.innerHTML=result==="shared"?"✅ Compartilhado!":"✅ Salvo!";
   }catch(e){
     console.error(e);showToast("Erro ao gerar imagem.");
+    btn.innerHTML="❌ Erro";
   }finally{
+    setTimeout(()=>{btn.innerHTML=oldText;btn.disabled=false;},2500);
     card.style.top="-9999px";
   }
 }
@@ -477,18 +486,17 @@ function showToast(msg){
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),3000);
 }
 
+function initRulesModal(){
+  const overlay=document.getElementById("rulesOverlay");
+  if(!overlay)return;
+  if(localStorage.getItem("escalacaoRulesSeen")==="1")overlay.classList.add("hidden");
+}
+
 function dismissRulesModal(){
   const overlay=document.getElementById("rulesOverlay");
   if(!overlay)return;
   overlay.classList.add("hidden");
-  localStorage.setItem("rulesSeen","1");
-}
-
-function initRulesModal(){
-  const overlay=document.getElementById("rulesOverlay");
-  if(!overlay)return;
-  const shouldShow=localStorage.getItem("trailActive")==="1"&&localStorage.getItem("rulesSeen")!=="1";
-  if(!shouldShow)overlay.classList.add("hidden");
+  localStorage.setItem("escalacaoRulesSeen","1");
 }
 
 // Inicialização

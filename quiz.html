@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="home.css" />
   <script src="theme.js"></script>
+  <script src="share-utils.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     /* Quiz-specific overrides */
@@ -470,6 +471,19 @@
 <body>
   <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
 
+  <div class="rules-overlay" id="rulesOverlay">
+    <div class="rules-modal">
+      <h2>Como funciona? 🧠</h2>
+      <ul class="rules-modal-list">
+        <li>Responda <strong>5 perguntas</strong> sobre futebol e a Copa do Mundo.</li>
+        <li>Cada pergunta tem 4 opções — escolha com cuidado!</li>
+        <li>Você tem <strong>tempo ilimitado</strong> para pensar.</li>
+        <li>Ao final, descubra seu nível e compartilhe o resultado!</li>
+      </ul>
+      <button class="rules-modal-btn" onclick="dismissRulesModal()">Entendi, vamos jogar! 🧠</button>
+    </div>
+  </div>
+
   <main class="home quiz-shell">
 
     <section class="hero" style="margin-bottom:20px">
@@ -502,7 +516,7 @@
     <!-- Header -->
     <div class="sc-header">
       <span class="sc-brand">Quiz da Copa</span>
-      <span class="sc-flag-pill"></span>
+      <span class="sc-flag-pill">🇧🇷 COPA 26</span>
     </div>
 
     <!-- Centro: anel + score + badge -->
@@ -528,7 +542,7 @@
 
     <!-- Rodapé -->
     <div class="sc-footer">
-      <div class="sc-cta">Desafio: bate esse resultado?</div>
+      <div class="sc-cta">Você consegue bater minha nota?<br>futplayhub.com.br</div>
       <div class="sc-copa-logo">⚽</div>
     </div>
 

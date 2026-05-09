@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="home.css" />
   <script src="theme.js"></script>
+  <script src="share-utils.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
@@ -305,47 +306,153 @@
       justify-content: center;
       font-family: 'Inter', sans-serif;
       text-align: center;
-      padding: 80px;
+      overflow: hidden;
+      box-sizing: border-box;
     }
 
     .sc-field {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 50% 50%, #16a34a 0%, transparent 70%),
-        linear-gradient(180deg, #052e16, #02140c);
-      z-index: -1;
+      background:
+        radial-gradient(ellipse at 50% 40%, rgba(22,163,74,0.35) 0%, transparent 65%),
+        radial-gradient(ellipse at 80% 90%, rgba(255,214,0,0.1) 0%, transparent 50%),
+        linear-gradient(180deg, #052e16 0%, #02140c 100%);
+      z-index: 0;
+    }
+
+    .sc-field-lines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0,180,60,0.04) 0px, rgba(0,180,60,0.04) 120px,
+        rgba(0,150,45,0.04) 120px, rgba(0,150,45,0.04) 240px
+      );
+      z-index: 0;
+    }
+
+    .sc-top-stripe {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 12px;
+      background: linear-gradient(90deg, #009b3a, #ffd600, #009b3a);
+      z-index: 2;
+    }
+
+    .sc-header {
+      position: absolute;
+      top: 72px;
+      left: 84px;
+      right: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 2;
+    }
+
+    .sc-brand {
+      font-size: 33px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+    }
+
+    .sc-flag-pill {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 60px;
+      padding: 12px 30px;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .sc-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: -60px;
     }
 
     .sc-crown {
-      font-size: 160px;
-      margin-bottom: 40px;
+      font-size: 140px;
+      line-height: 1;
+      filter: drop-shadow(0 0 40px rgba(255,214,0,0.5));
     }
 
-    .sc-title {
-      font-size: 80px;
-      font-weight: 900;
-      margin-bottom: 20px;
-      letter-spacing: -0.02em;
+    .sc-eyebrow {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin: 30px 0 20px;
     }
 
     .sc-champ-flag {
-      font-size: 240px;
+      font-size: 260px;
       line-height: 1;
+      filter: drop-shadow(0 0 60px rgba(255,255,255,0.15));
     }
 
     .sc-champ-name {
-      font-size: 120px;
+      font-size: 110px;
       font-weight: 900;
       color: #ffd600;
-      margin-top: 20px;
+      letter-spacing: -0.02em;
+      margin-top: 16px;
+      text-shadow: 0 4px 40px rgba(255,214,0,0.3);
+    }
+
+    .sc-badge {
+      margin-top: 50px;
+      background: rgba(255,214,0,0.12);
+      border: 2px solid rgba(255,214,0,0.35);
+      border-radius: 100px;
+      padding: 22px 60px;
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      color: #ffd600;
     }
 
     .sc-footer {
       position: absolute;
-      bottom: 100px;
-      font-size: 42px;
-      color: rgba(255, 255, 255, 0.4);
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 48px 84px 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 2;
+    }
+
+    .sc-cta {
+      font-size: 34px;
       font-weight: 700;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.06em;
+      line-height: 1.5;
+    }
+
+    .sc-copa-logo {
+      width: 120px;
+      height: 120px;
+      border-radius: 28px;
+      background: rgba(0,200,80,0.12);
+      border: 2px solid rgba(0,200,80,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 58px;
     }
 
     /* Mobile Fallback */
@@ -423,6 +530,19 @@
 <body>
   <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
 
+  <div class="rules-overlay" id="rulesOverlay">
+    <div class="rules-modal">
+      <h2>Como funciona? 🏆</h2>
+      <ul class="rules-modal-list">
+        <li>Defina os <strong>classificados de cada grupo</strong> da Copa.</li>
+        <li>Simule o <strong>mata-mata</strong> completo, jogo a jogo.</li>
+        <li>Torça pelo seu favorito até a grande final!</li>
+        <li>Baixe e compartilhe o seu campeão nas redes sociais.</li>
+      </ul>
+      <button class="rules-modal-btn" onclick="dismissRulesModal()">Entendi, vamos simular! 🏆</button>
+    </div>
+  </div>
+
   <main class="home sim-shell">
     <section class="hero" style="margin-bottom:20px">
       <div class="kicker">🏆 Mundial 2026</div>
@@ -483,11 +603,26 @@
   <!-- SHARE CARD (OFF-SCREEN) -->
   <div id="shareCard">
     <div class="sc-field"></div>
-    <div class="sc-crown">🏆</div>
-    <div class="sc-title">MEU CAMPEÃO DA COPA 2026</div>
-    <div class="sc-champ-flag" id="scFlag"></div>
-    <div class="sc-champ-name" id="scName">BRASIL</div>
-    <div class="sc-footer" id="scBadge">HEXA CONFIRMADO! 🇧🇷</div>
+    <div class="sc-field-lines"></div>
+    <div class="sc-top-stripe"></div>
+
+    <div class="sc-header">
+      <span class="sc-brand">Simulador da Copa</span>
+      <span class="sc-flag-pill">🇧🇷 COPA 26</span>
+    </div>
+
+    <div class="sc-content">
+      <div class="sc-crown">🏆</div>
+      <div class="sc-eyebrow">Meu Campeão</div>
+      <div class="sc-champ-flag" id="scFlag"></div>
+      <div class="sc-champ-name" id="scName">BRASIL</div>
+      <div class="sc-badge" id="scBadge">HEXA CONFIRMADO! 🇧🇷</div>
+    </div>
+
+    <div class="sc-footer">
+      <div class="sc-cta">Quem é o seu campeão?<br>futplayhub.com.br</div>
+      <div class="sc-copa-logo">⚽</div>
+    </div>
   </div>
 
   <script src="simulador.js"></script>
