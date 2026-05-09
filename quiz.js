@@ -243,19 +243,28 @@ async function shareQuizResult(score, level) {
     btn.disabled = true;
     card.style.top = "0";
     card.style.left = "-9999px";
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise(r => setTimeout(r, 150));
 
     const canvas = await html2canvas(card, {
-      backgroundColor: null,
-      scale: 1,
-      useCORS: true
+      backgroundColor: '#031a0c',
+      scale: 2,
+      useCORS: true,
+      logging: false
     });
 
-    const link = document.createElement("a");
-    link.href = canvas.toDataURL("image/png");
-    link.download = "quiz-copa-resultado.png";
-    link.click();
-    btn.innerHTML = "✅ Salvo!";
+    card.style.top = "-9999px";
+
+    const result = await shareOrDownload(
+      canvas,
+      'quiz-copa-resultado.png',
+      `Acertei ${score}/${level} no Quiz da Copa 2026! Você consegue mais? copa26.com.br`
+    );
+    if (result === 'cancelled') {
+      btn.innerHTML = oldText;
+      btn.disabled = false;
+      return;
+    }
+    btn.innerHTML = result === 'shared' ? "✅ Compartilhado!" : "✅ Salvo!";
   } catch (e) {
     console.error(e);
     btn.innerHTML = "❌ Erro";
@@ -263,10 +272,20 @@ async function shareQuizResult(score, level) {
     setTimeout(() => {
       btn.innerHTML = oldText;
       btn.disabled = false;
-    }, 2000);
+    }, 2500);
     card.style.top = "-9999px";
   }
 }
+
+function dismissRulesModal() {
+  const el = document.getElementById('rulesOverlay');
+  if (el) { el.classList.add('hidden'); localStorage.setItem('quizRulesSeen', '1'); }
+}
+
+(function initRulesModal() {
+  const el = document.getElementById('rulesOverlay');
+  if (el && localStorage.getItem('quizRulesSeen') === '1') el.classList.add('hidden');
+})();
 
 initQuiz();
 renderQuizPage();

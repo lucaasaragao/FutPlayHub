@@ -611,3 +611,84 @@ body {
     justify-content: center;
   }
 }
+
+/* ─── Rules Modal (shared across all minigames) ──────────────────────────── */
+.rules-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .72);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.rules-overlay.hidden {
+  display: none;
+}
+
+.rules-modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(.9) translateY(30px); }
+  to   { opacity: 1; transform: scale(1)  translateY(0); }
+}
+
+.rules-modal h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+
+.rules-modal-list {
+  list-style: none;
+  margin-bottom: 30px;
+}
+
+.rules-modal-list li {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 12px;
+  padding-left: 28px;
+  position: relative;
+}
+
+.rules-modal-list li::before {
+  content: '⚽';
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.rules-modal-btn {
+  width: 100%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all .2s;
+  box-shadow: 0 8px 20px var(--glow-primary);
+}
+
+.rules-modal-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}

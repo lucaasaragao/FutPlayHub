@@ -9,7 +9,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="home.css" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="theme.js"></script>
+  <script src="share-utils.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     .bolao-shell {
@@ -219,11 +223,371 @@
       border-radius: 8px;
       border-bottom: none;
     }
+
+    /* ── Registration Modal ── */
+    .reg-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .reg-label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .emoji-option {
+      font-size: 26px;
+      padding: 8px 4px;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      background: var(--bg);
+      transition: all .15s;
+      user-select: none;
+    }
+
+    .emoji-option:hover { background: var(--primary-light); border-color: var(--primary); }
+    .emoji-option.selected { background: var(--primary-light); border-color: var(--primary); transform: scale(1.15); }
+
+    .reg-input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+      transition: border-color .2s;
+    }
+
+    .reg-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--glow-primary); }
+
+    .reg-error {
+      font-size: 13px;
+      color: var(--danger);
+      margin-bottom: 12px;
+      min-height: 18px;
+    }
+
+    /* ── Profile badge ── */
+    .profile-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary-light);
+      border: 1px solid var(--primary);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .profile-badge:hover { background: var(--primary); color: #fff; }
+
+    /* ── Live indicator ── */
+    .live-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 1.5s infinite;
+      margin-right: 4px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .5; transform: scale(1.3); }
+    }
+
+    /* ── SHARE CARD ── */
+    #shareCard {
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      width: 1080px;
+      height: 1920px;
+      background: #031a0c;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    #shareCard .sc-field {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 50% 45%, rgba(22,163,74,0.32) 0%, transparent 65%),
+        radial-gradient(ellipse at 15% 85%, rgba(255,214,0,0.1) 0%, transparent 45%),
+        linear-gradient(180deg, #052e16 0%, #02140c 100%);
+    }
+
+    #shareCard .sc-field-lines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0,180,60,0.04) 0px, rgba(0,180,60,0.04) 120px,
+        rgba(0,150,45,0.04) 120px, rgba(0,150,45,0.04) 240px
+      );
+    }
+
+    #shareCard .sc-top-stripe {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 12px;
+      background: linear-gradient(90deg, #009b3a, #ffd600, #009b3a);
+      z-index: 2;
+    }
+
+    #shareCard .sc-header {
+      position: absolute;
+      top: 72px;
+      left: 84px;
+      right: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 2;
+    }
+
+    #shareCard .sc-brand {
+      font-size: 33px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+    }
+
+    #shareCard .sc-flag-pill {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 60px;
+      padding: 12px 30px;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.6);
+    }
+
+    #shareCard .sc-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 0 84px;
+      box-sizing: border-box;
+    }
+
+    #shareCard .sc-eyebrow {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 30px;
+    }
+
+    #shareCard .sc-trophy {
+      font-size: 130px;
+      line-height: 1;
+      filter: drop-shadow(0 0 40px rgba(255,214,0,0.4));
+      margin-bottom: 30px;
+    }
+
+    #shareCard .sc-score-label {
+      font-size: 40px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    #shareCard .sc-score {
+      font-size: 220px;
+      font-weight: 900;
+      color: #4ade80;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      text-shadow: 0 0 60px rgba(74,222,128,0.3);
+    }
+
+    #shareCard .sc-pts {
+      font-size: 60px;
+      font-weight: 900;
+      color: rgba(74,222,128,0.6);
+      letter-spacing: 0.1em;
+      margin-top: -10px;
+      margin-bottom: 60px;
+    }
+
+    #shareCard .sc-ranking {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 40px 50px;
+      box-sizing: border-box;
+    }
+
+    #shareCard .sc-rank-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    #shareCard .sc-rank-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 34px;
+      font-weight: 700;
+    }
+
+    #shareCard .sc-rank-row:last-child {
+      border-bottom: none;
+    }
+
+    #shareCard .sc-rank-row.is-me {
+      color: #4ade80;
+    }
+
+    #shareCard .sc-rank-pos {
+      width: 60px;
+      font-size: 30px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    #shareCard .sc-rank-name { flex: 1; }
+
+    #shareCard .sc-rank-pts {
+      font-weight: 900;
+      color: rgba(255,255,255,0.7);
+    }
+
+    #shareCard .sc-rank-row.is-me .sc-rank-pts { color: #4ade80; }
+
+    #shareCard .sc-footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 48px 84px 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 2;
+    }
+
+    #shareCard .sc-cta {
+      font-size: 34px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 0.06em;
+      line-height: 1.5;
+    }
+
+    #shareCard .sc-copa-logo {
+      width: 120px;
+      height: 120px;
+      border-radius: 28px;
+      background: rgba(0,200,80,0.12);
+      border: 2px solid rgba(0,200,80,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 58px;
+    }
   </style>
 </head>
 
 <body>
   <button id="themeToggle" onclick="toggleTheme()" aria-label="Modo escuro"></button>
+
+  <!-- Modal de Cadastro -->
+  <div class="rules-overlay hidden" id="registerModal">
+    <div class="rules-modal">
+      <h2>Bem-vindo ao Bolão! 🏆</h2>
+      <p class="reg-subtitle">Escolha seu emoji e apelido para entrar no ranking global com jogadores do mundo todo.</p>
+
+      <div class="reg-label">Escolha seu emoji</div>
+      <div class="emoji-grid">
+        <span class="emoji-option selected" data-emoji="⚽" onclick="selectEmoji(this)">⚽</span>
+        <span class="emoji-option" data-emoji="🏆" onclick="selectEmoji(this)">🏆</span>
+        <span class="emoji-option" data-emoji="🦁" onclick="selectEmoji(this)">🦁</span>
+        <span class="emoji-option" data-emoji="🔥" onclick="selectEmoji(this)">🔥</span>
+        <span class="emoji-option" data-emoji="💪" onclick="selectEmoji(this)">💪</span>
+        <span class="emoji-option" data-emoji="🎯" onclick="selectEmoji(this)">🎯</span>
+        <span class="emoji-option" data-emoji="👑" onclick="selectEmoji(this)">👑</span>
+        <span class="emoji-option" data-emoji="🌟" onclick="selectEmoji(this)">🌟</span>
+        <span class="emoji-option" data-emoji="⚡" onclick="selectEmoji(this)">⚡</span>
+        <span class="emoji-option" data-emoji="🚀" onclick="selectEmoji(this)">🚀</span>
+        <span class="emoji-option" data-emoji="🦅" onclick="selectEmoji(this)">🦅</span>
+        <span class="emoji-option" data-emoji="🐯" onclick="selectEmoji(this)">🐯</span>
+        <span class="emoji-option" data-emoji="💎" onclick="selectEmoji(this)">💎</span>
+        <span class="emoji-option" data-emoji="🎊" onclick="selectEmoji(this)">🎊</span>
+        <span class="emoji-option" data-emoji="🏅" onclick="selectEmoji(this)">🏅</span>
+        <span class="emoji-option" data-emoji="🇧🇷" onclick="selectEmoji(this)">🇧🇷</span>
+        <span class="emoji-option" data-emoji="🏟️" onclick="selectEmoji(this)">🏟️</span>
+        <span class="emoji-option" data-emoji="🧠" onclick="selectEmoji(this)">🧠</span>
+        <span class="emoji-option" data-emoji="🤩" onclick="selectEmoji(this)">🤩</span>
+        <span class="emoji-option" data-emoji="😎" onclick="selectEmoji(this)">😎</span>
+      </div>
+
+      <div class="reg-label">Seu apelido</div>
+      <input class="reg-input" id="regApelido" type="text" placeholder="Ex: Lucas BR, Craque10..." maxlength="20"
+        onkeydown="if(event.key==='Enter') submitRegistration()">
+      <div class="reg-error" id="regError"></div>
+      <button class="rules-modal-btn" onclick="submitRegistration()">Entrar no Bolão! 🚀</button>
+    </div>
+  </div>
+
+  <div class="rules-overlay" id="rulesOverlay">
+    <div class="rules-modal">
+      <h2>Como funciona? ⚽</h2>
+      <ul class="rules-modal-list">
+        <li>Dê seus <strong>palpites</strong> para cada jogo da Copa.</li>
+        <li>Acerto no placar exato vale <strong>mais pontos</strong>.</li>
+        <li>Compare sua pontuação com outros jogadores no ranking.</li>
+        <li>Compartilhe sua posição e desafie seus amigos!</li>
+      </ul>
+      <button class="rules-modal-btn" onclick="dismissRulesModal()">Entendi, vamos jogar! ⚽</button>
+    </div>
+  </div>
 
   <main class="home bolao-shell">
     <section class="hero" style="margin-bottom:20px">
@@ -240,26 +604,27 @@
     <div id="palpitesContainer"></div>
 
     <div class="ranking-card">
-      <div class="ranking-title">Ranking Geral</div>
-
-      <div id="historyStats"
-        style="display:flex; justify-content:center; gap:16px; margin-bottom:16px; font-size:12px; font-weight:600;">
-        <div style="background:var(--primary-light); color:var(--primary); padding:6px 12px; border-radius:8px;">Maior:
-          <span id="bestScore">0</span>
-        </div>
-        <div
-          style="background:var(--card); color:var(--text); border:1px solid var(--border); padding:6px 12px; border-radius:8px;">
-          Total Atual: <span id="currentScore">0</span></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+        <div class="ranking-title" style="margin-bottom:0;">🏆 Ranking Global</div>
+        <div><span class="live-dot"></span><span style="font-size:12px; font-weight:700; color:var(--text-muted);">AO VIVO</span></div>
       </div>
 
-      <div class="ranking-list" id="rankingList"></div>
-      <div style="display: flex; gap: 8px; justify-content: center; flex-wrap:wrap;">
+      <div style="text-align:center; margin-bottom:16px;">
+        <span id="myProfileBadge" class="profile-badge" onclick="openEditModal()" title="Clique para editar"></span>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Minha pontuação: <strong id="currentScore" style="color:var(--primary);">0</strong> pts</div>
+      </div>
+
+      <div class="ranking-list" id="rankingList">
+        <div style="text-align:center; padding:20px; color:var(--text-muted);">Carregando ranking...</div>
+      </div>
+
+      <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:16px;">
         <button class="btn btn-ghost" onclick="copyRanking()">📋 Copiar Texto</button>
-        <button class="btn btn-primary" onclick="shareImage()">📸 Compartilhar Imagem</button>
+        <button class="btn btn-primary" onclick="shareImage()">📸 Compartilhar</button>
       </div>
     </div>
 
-    <div class="final-actions" style="margin-bottom: 40px; text-align:center;">
+    <div class="final-actions" style="margin-bottom:40px; text-align:center;">
       <button class="btn btn-ghost" onclick="resetBolao()">⚠️ Resetar Meus Palpites</button>
     </div>
 
@@ -283,24 +648,31 @@
   </div>
 
   <!-- Share Card Offscreen -->
-  <div id="shareCard"
-    style="position: absolute; top: -9999px; left: 0; width: 400px; background: #052e16; color: #fff; padding: 32px; border-radius: 16px; font-family: 'Inter', sans-serif;">
-    <div
-      style="text-align:center; font-family:'Syne', sans-serif; font-size:24px; font-weight:800; margin-bottom:8px; color:#dcfce7;">
-      🏆 Bolão da Copa 26</div>
-    <div style="text-align:center; font-size:14px; color:#86efac; margin-bottom:24px;">Veja minha campanha!</div>
+  <div id="shareCard">
+    <div class="sc-field"></div>
+    <div class="sc-field-lines"></div>
+    <div class="sc-top-stripe"></div>
 
-    <div
-      style="background:rgba(255,255,255,0.1); border-radius:12px; padding:20px; text-align:center; margin-bottom:20px;">
-      <div style="font-size:14px; font-weight:600; color:#dcfce7; margin-bottom:4px;">Minha Pontuação</div>
-      <div id="shareScore" style="font-family:'Syne', sans-serif; font-size:48px; font-weight:800; color:#4ade80;">0
+    <div class="sc-header">
+      <span class="sc-brand">Bolão da Copa</span>
+      <span class="sc-flag-pill">🇧🇷 COPA 26</span>
+    </div>
+
+    <div class="sc-content">
+      <div class="sc-eyebrow">Minha Pontuação</div>
+      <div class="sc-trophy">🏆</div>
+      <div class="sc-score" id="shareScore">0</div>
+      <div class="sc-pts">PONTOS</div>
+
+      <div class="sc-ranking">
+        <div class="sc-rank-title">Ranking</div>
+        <div id="shareRanking"></div>
       </div>
     </div>
 
-    <div style="background:rgba(255,255,255,0.1); border-radius:12px; padding:16px;">
-      <div style="font-size:14px; font-weight:600; color:#dcfce7; margin-bottom:12px; text-align:center;">Ranking (Top
-        3)</div>
-      <div id="shareRanking" style="font-size:14px; font-weight:600;"></div>
+    <div class="sc-footer">
+      <div class="sc-cta">Será que você me supera?<br>futplayhub.com.br</div>
+      <div class="sc-copa-logo">⚽</div>
     </div>
   </div>
 

@@ -314,17 +314,54 @@ function resetSimulator() { localStorage.removeItem('copa26_bracket_state'); loc
 async function generateShareImage() {
   const c = state.bracket.campeao; if (!c) return;
   const btn = document.querySelector('button[onclick="generateShareImage()"]');
+  const oldText = btn.innerHTML;
   btn.innerHTML = "⏳ Gerando..."; btn.disabled = true;
-  document.getElementById("scFlag").textContent = c.f; document.getElementById("scName").textContent = c.n.toUpperCase();
+
+  document.getElementById("scFlag").textContent = c.f;
+  document.getElementById("scName").textContent = c.n.toUpperCase();
   document.getElementById("scBadge").textContent = c.n === "Brasil" ? "HEXA CONFIRMADO! 🇧🇷" : "MEU CAMPEÃO DA COPA 🇧🇷";
-  const card = document.getElementById("shareCard"); card.style.top = "0"; card.style.left = "0";
+
+  const card = document.getElementById("shareCard");
+  card.style.top = "0";
+  card.style.left = "-9999px";
+
   try {
-    const canvas = await html2canvas(card, { scale: 1 });
-    const link = document.createElement("a"); link.href = canvas.toDataURL("image/png");
-    link.download = `campeao-copa26.png`; link.click(); btn.innerHTML = "✅ Salvo!";
-  } catch(e) { btn.innerHTML = "❌ Erro"; } finally {
-    setTimeout(() => { btn.innerHTML = "📸 Baixar Resultado"; btn.disabled = false; card.style.top = "-9999px"; }, 2000);
+    await new Promise(r => setTimeout(r, 150));
+    const canvas = await html2canvas(card, {
+      backgroundColor: '#031a0c',
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+
+    card.style.top = "-9999px";
+
+    const result = await shareOrDownload(
+      canvas,
+      'campeao-copa26.png',
+      `Meu campeão da Copa 2026 é ${c.n}! Simule o seu em copa26.com.br`
+    );
+    if (result === 'cancelled') {
+      btn.innerHTML = oldText;
+      btn.disabled = false;
+      return;
+    }
+    btn.innerHTML = result === 'shared' ? "✅ Compartilhado!" : "✅ Salvo!";
+  } catch(e) {
+    console.error(e);
+    btn.innerHTML = "❌ Erro";
+  } finally {
+    setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; card.style.top = "-9999px"; }, 2500);
   }
 }
 
-document.addEventListener("DOMContentLoaded", init);
+function dismissRulesModal() {
+  const el = document.getElementById('rulesOverlay');
+  if (el) { el.classList.add('hidden'); localStorage.setItem('simuladorRulesSeen', '1'); }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  const el = document.getElementById('rulesOverlay');
+  if (el && localStorage.getItem('simuladorRulesSeen') === '1') el.classList.add('hidden');
+  init();
+});
